@@ -1,0 +1,6 @@
+@import 'bulma/css/bulma.min.css';
+
+/* Estilos adicionais opcionais */
+body {
+    min-height: 100vh;
+}
