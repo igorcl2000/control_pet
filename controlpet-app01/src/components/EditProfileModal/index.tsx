@@ -207,7 +207,6 @@ export function EditProfileModal({
                                         required
                                     >
                                         <option value="Ciência da Computação">Ciência da Computação</option>
-                                        <option value="Engenharia de Software">Engenharia de Software</option>
                                         <option value="Análise de Desenvolvimento de Sistemas">Análise de Desenvolvimento de Sistemas</option>
                                     </select>
                                 </div>

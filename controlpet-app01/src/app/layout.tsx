@@ -6,6 +6,9 @@ import '../styles/global.css';
 export const metadata: Metadata = {
   title: 'Control PET',
   description: 'Control PET 1.0',
+  icons: {
+    icon: '/icon_pet.png'
+  },
 };
 
 export default function RootLayout({
