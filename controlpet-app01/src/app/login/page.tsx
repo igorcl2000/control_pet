@@ -27,9 +27,7 @@ export default function LoginPage() {
             setLocalError(null);
             await login(data.email, data.senha);
         } catch (err) {
-            setLocalError(
-                err instanceof Error ? err.message : 'Credenciais inválidas'
-            );
+            setLocalError('Erro ao fazer Login');
         }
     };
 

@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 
+
 type FormData = {
     nome: string;
     email: string;
     senha: string;
+    confirmSenha: string;
     tipo: string;
 };
 
@@ -20,7 +22,7 @@ export default function RegisterPage() {
         register: registerForm,
         handleSubmit,
         formState: { errors, isSubmitting },
-        watch
+        watch // 'watch' é usado para observar o valor de um campo
     } = useForm<FormData>({
         mode: 'onBlur',
         defaultValues: {
@@ -29,11 +31,12 @@ export default function RegisterPage() {
     });
 
     const [localError, setLocalError] = useState<string | null>(null);
-    const password = watch('senha');
+    const password = watch('senha'); // Assiste ao valor do campo 'senha'
 
     const onSubmit = async (data: FormData) => {
         try {
             setLocalError(null);
+            // 4. Ajuste onSubmit: Não envie confirmSenha para o backend
             await register(data.nome, data.email, data.senha, data.tipo);
             router.push('/login');
         } catch (err) {
@@ -141,31 +144,31 @@ export default function RegisterPage() {
                                         <p className="help is-danger">{errors.senha.message}</p>
                                     )}
                                 </div>
-                                {/*
+
+                                {/* Campo de Confirmação de Senha */}
                                 <div className="field">
-                                    <label className="label">Tipo de Usuário</label>
+                                    <label className="label">Confirmar Senha</label>
                                     <div className="control has-icons-left">
-                                        <div className={`select is-fullwidth ${errors.tipo ? 'is-danger' : ''}`}>
-                                            <select
-                                                {...registerForm('tipo', {
-                                                    required: 'Selecione um tipo de usuário'
-                                                })}
-                                                disabled={isLoading}
-                                            >
-                                                <option value="ALUNO">Aluno</option>
-                                                <option value="ORIENTADOR">Orientador</option>
-                                            </select>
-                                        </div>
+                                        <input
+                                            {...registerForm('confirmSenha', {
+                                                required: 'Confirmação de senha é obrigatória',
+                                                // 3. Adicione a validação de 'match'
+                                                validate: (value) =>
+                                                    value === password || 'As senhas não coincidem'
+                                            })}
+                                            className={`input ${errors.confirmSenha ? 'is-danger' : ''}`}
+                                            type="password"
+                                            placeholder="••••••"
+                                            disabled={isLoading}
+                                        />
                                         <span className="icon is-small is-left">
-                                            <i className="fas fa-user-tag"></i>
+                                            <i className="fas fa-lock"></i>
                                         </span>
                                     </div>
-                                    {errors.tipo && (
-                                        <p className="help is-danger">{errors.tipo.message}</p>
+                                    {errors.confirmSenha && (
+                                        <p className="help is-danger">{errors.confirmSenha.message}</p>
                                     )}
                                 </div>
-                                
-                                */}
 
                                 <div className="field mt-5">
                                     <button
