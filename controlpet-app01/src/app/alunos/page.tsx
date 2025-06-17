@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NavBar } from '@/components/navbar';
 import api from '@/services/api';
 import { AxiosError } from 'axios'; // Importar AxiosError para melhor tipagem de erros
 
@@ -229,7 +228,6 @@ export default function GerenciarAlunos() {
 
     return (
         <>
-            <NavBar />
             <section className="section">
                 <div className="container">
                     <div className="columns is-centered">

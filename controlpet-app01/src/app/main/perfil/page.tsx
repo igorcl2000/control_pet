@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
-import { NavBar } from '@/components/navbar';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { CreateAlunoModal } from '@/components/CreateAlunoModal';
@@ -121,7 +120,6 @@ export default function Perfil() {
     if (isLoading || loading) {
         return (
             <>
-                <NavBar />
                 <section className="section">
                     <div className="container has-text-centered">
                         <span className="icon is-large">
@@ -141,7 +139,6 @@ export default function Perfil() {
     if (error) {
         return (
             <>
-                <NavBar />
                 <section className="section">
                     <div className="container">
                         <div className="notification is-danger">
@@ -158,7 +155,6 @@ export default function Perfil() {
 
     return (
         <>
-            <NavBar />
             <section className="section">
                 <div className="container">
                     <div className="columns is-centered">
@@ -166,21 +162,9 @@ export default function Perfil() {
                             <div className="card">
                                 <div className="card-content">
                                     <div className="media">
-                                        <div className="media-left">
-                                            <figure className="image is-128x128">
-                                                <img
-                                                    src="/default-avatar.png"
-                                                    alt="Foto do perfil"
-                                                    className="is-rounded"
-                                                />
-                                            </figure>
-                                        </div>
                                         <div className="media-content">
                                             <p className="title is-4">{usuario?.nome}</p>
                                             <p className="subtitle is-6">{usuario?.email}</p>
-                                            <button className="button is-small is-text">
-                                                Alterar foto
-                                            </button>
                                         </div>
                                     </div>
 

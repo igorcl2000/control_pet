@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 id: userData.id,
                 nome: userData.nome,
                 email: userData.email,
-                tipoUsuario: userData.tipo, // Certifique-se que o campo é 'tipo' ou 'tipoUsuario'
+                tipoUsuario: userData.tipoUsuario, // Certifique-se que o campo é 'tipo' ou 'tipoUsuario'
             });
 
             // Redireciona APÓS o estado do usuário ser atualizado

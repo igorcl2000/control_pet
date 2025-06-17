@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NavBar } from '@/components/navbar';
 import api from '@/services/api';
 
 interface AlunoInfo {
@@ -108,7 +107,6 @@ export default function RelatorioMensalPET() {
     if (!alunoInfo && !error) {
         return (
             <>
-                <NavBar />
                 <section className="section">
                     <div className="container">
                         <div className="has-text-centered">
@@ -125,7 +123,6 @@ export default function RelatorioMensalPET() {
 
     return (
         <>
-            <NavBar />
             <section className="section">
                 <div className="container">
                     <div className="columns is-centered">

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NavBar } from '@/components/navbar';
 import api from '@/services/api';
 import { RelatorioDetailsModal } from '@/components/RelatorioDetailsModal';
 
@@ -138,7 +137,6 @@ export default function HistRelatorios() {
 
     return (
         <>
-            <NavBar />
             <section className="section">
                 <div className="container">
                     <div className="columns is-centered">

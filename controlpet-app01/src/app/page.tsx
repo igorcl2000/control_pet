@@ -8,18 +8,14 @@ export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
-  // Redirecionamento automático baseado no status de autenticação
   useEffect(() => {
-    if (isAuthenticated) {
-      window.location.reload();
+    if (isAuthenticated === true) {
       router.push('/dashboard');
-    } else {
-      window.location.reload();
+    } else if (isAuthenticated === false) {
       router.push('/login');
     }
   }, [isAuthenticated, router]);
 
-  // Exibe um loader durante o redirecionamento
   return (
     <section className="hero is-fullheight">
       <div className="hero-body">

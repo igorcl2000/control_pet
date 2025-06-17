@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
-import { NavBar } from '@/components/navbar';
 
 export default function DashboardPage() {
     const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -42,10 +41,8 @@ export default function DashboardPage() {
     }
 
     // Se estiver autenticado e o carregamento terminou, então 'user' e 'user.tipoUsuario' estão disponíveis.
-    // Agora podemos renderizar a NavBar e o restante do conteúdo.
     return (
         <>
-            <NavBar /> {/* A NavBar só é renderizada aqui, após a autenticação ser confirmada */}
             <section className="section">
                 <div className="container">
                     <div className="level">

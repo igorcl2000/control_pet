@@ -37,7 +37,7 @@ public class AuthController {
         
         if (passwordEncoder.matches(body.senha(), user.getSenhaHash())) {
             String token = this.tokenService.generateToken(user);
-            return ResponseEntity.ok(new LoginResponse(user.getNome(), token));
+            return ResponseEntity.ok(new LoginResponse(user.getNome(),user.getTipo(), token));
         }
         return ResponseEntity.badRequest().build();
     }
@@ -54,7 +54,7 @@ public class AuthController {
             this.repository.save(newUser);
 
             String token = this.tokenService.generateToken(newUser);
-            return ResponseEntity.ok(new LoginResponse(newUser.getNome(), token));
+            return ResponseEntity.ok(new LoginResponse(newUser.getNome(),newUser.getTipo(), token));
         }
         return ResponseEntity.badRequest().build();
     }

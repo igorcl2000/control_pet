@@ -1,4 +1,11 @@
 // LoginResponse.java
 package com.controlpet.dto;
 
-public record LoginResponse (String nome, String token) { }
+import com.controlpet.model.enums.TipoUsuario;
+
+public record LoginResponse (
+        String nome,
+        TipoUsuario tipoUsuario,
+        String token
+
+) { }
