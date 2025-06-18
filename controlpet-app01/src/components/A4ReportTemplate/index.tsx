@@ -12,7 +12,7 @@ interface A4ReportTemplateProps {
     petitionerComments?: string;
     reportMonth?: string;
     reportYear?: string;
-    studentType?: 'voluntario' | 'bolsista'; // Novo: Tipo de estudante
+    studentType?: string; // Novo: Tipo de estudante
     activityStartDate?: string; // Novo: Data de início das atividades
     activityEndDate?: string; // Novo: Data de fim das atividades
     announcement?: string; // Novo: Campo para o Edital
@@ -213,14 +213,12 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     }
 
     body {
-        display: flex;
         flex-direction: column;
         justify-content: flex-start;
         align-items: center;
         min-height: 100vh;
         background-color: #f0f0f0;
         margin: 0;
-        padding-top: 20px;
         padding-bottom: 40px;
         overflow-y: auto;
     }

@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import api from '@/services/api';
+import { useRouter } from 'next/navigation'; // Importe o useRouter
 
 interface RelatorioDetailsModalProps {
     isActive: boolean;
@@ -32,6 +33,8 @@ export function RelatorioDetailsModal({
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const router = useRouter(); // Inicialize o useRouter
 
     useEffect(() => {
         setOriginalData(relatorio);
@@ -86,23 +89,10 @@ export function RelatorioDetailsModal({
         }
     };
 
-    const handleDownloadPdf = async () => {
-        try {
-            const response = await api.get(`/api/relatorios/${relatorio.id}/pdf`, {
-                responseType: 'blob'
-            });
-
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `relatorio-${relatorio.id}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode?.removeChild(link);
-        } catch (error) {
-            console.error('Erro ao gerar PDF:', error);
-            setError('Erro ao gerar PDF. Tente novamente.');
-        }
+    const handleDownloadPdf = () => {
+        // Redireciona para a página de geração de PDF, passando o ID do relatório
+        router.push(`/relatorios/gerar?id=${relatorio.id}`);
+        onClose(); // Opcional: fecha o modal após o clique
     };
 
     return (
@@ -310,7 +300,7 @@ export function RelatorioDetailsModal({
                             <button
                                 type="button"
                                 className="button is-success"
-                                onClick={handleDownloadPdf}
+                                onClick={handleDownloadPdf} // Chamará a função que redireciona
                             >
                                 Baixar PDF
                             </button>
