@@ -37,14 +37,20 @@ interface ReportData {
     alunoNome?: string; // If your backend already sends student name with report
 }
 
+// Custom date formatting function
+const formatarData = (dataString: string): string => {
+    // Ensure the date string is in 'YYYY-MM-DD' format before splitting
+    if (!dataString) return 'N/A';
+    const [ano, mes, dia] = dataString.split('-');
+    return `${dia}/${mes}/${ano}`;
+};
 
 const ReportPage: React.FC<{}> = () => {
     const searchParams = useSearchParams();
     const relatorioId = searchParams.get('id');
 
     const [reportData, setReportData] = useState<ReportData | null>(null);
-    // Removed usuario state as it was fetching the logged-in user, not the report's student
-    const [alunoData, setAlunoData] = useState<Aluno | null>(null); // State for student data specific to the report
+    const [alunoData, setAlunoData] = useState<Aluno | null>(null);
     const [isLoadingReport, setIsLoadingReport] = useState(true);
     const [errorReport, setErrorReport] = useState<string | null>(null);
 
@@ -107,7 +113,7 @@ const ReportPage: React.FC<{}> = () => {
         if (contentRef.current && html2pdf) {
             const options = {
                 margin: [5, 5, 5, 5],
-                filename: `relatorio_${reportData?.id}.pdf`,
+                filename: `relatorio_${alunoData?.usuario?.nome}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -148,7 +154,6 @@ const ReportPage: React.FC<{}> = () => {
         );
     }
 
-    // Now, we only check for reportData and alunoData
     if (!reportData || !alunoData) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
@@ -162,17 +167,18 @@ const ReportPage: React.FC<{}> = () => {
         institutionPetGroup: "PET Computação Ituiutaba", // Adjust as needed
         tutorName: "Ailton Luiz Dias Siqueira Junior", // Adjust as needed
         todayDate: todayDate,
-        studentName: alunoData?.usuario?.nome || 'N/A', // Correct: Use alunoData.usuario.nome
-        studentCourse: alunoData?.curso || 'N/A', // From Aluno
+        studentName: alunoData?.usuario?.nome || 'N/A',
+        studentCourse: alunoData?.curso || 'N/A',
         activitiesSummary: reportData.resumoAtividades,
         petitionerComments: reportData.comentarios || '',
         reportMonth: new Date(reportData.dataInicial).toLocaleString('pt-BR', { month: 'long' }),
         reportYear: new Date(reportData.dataInicial).getFullYear().toString(),
-        studentType: alunoData?.tipoEstudante || 'N/A', // From Aluno
-        activityStartDate: new Date(reportData.dataInicial).toLocaleDateString('pt-BR'),
-        activityEndDate: new Date(reportData.dataFinal).toLocaleDateString('pt-BR'),
-        announcement: alunoData?.editalIngresso || 'N/A', // From Aluno
-        studentSignatureName: alunoData?.usuario?.nome || 'N/A', // Correct: Use alunoData.usuario.nome for signature
+        studentType: alunoData?.tipoEstudante || 'N/A',
+        // Apply the custom formatting function here
+        activityStartDate: formatarData(reportData.dataInicial),
+        activityEndDate: formatarData(reportData.dataFinal),
+        announcement: alunoData?.editalIngresso || 'N/A',
+        studentSignatureName: alunoData?.usuario?.nome || 'N/A',
     };
 
     return (

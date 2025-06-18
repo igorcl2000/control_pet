@@ -164,7 +164,7 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
                                         required
                                     >
                                         <option value="Ciência da Computação">Ciência da Computação</option>
-                                        <option value="Análise de Desenvolvimento de Sistemas">Análise de Desenvolvimento de Sistemas</option>
+                                        <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
                                     </select>
                                 </div>
                             </div>
