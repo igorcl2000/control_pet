@@ -30,6 +30,10 @@ export default function HistRelatorios() {
     const [selectedRelatorio, setSelectedRelatorio] = useState<Relatorio | null>(null);
     const [isDetailsModalActive, setIsDetailsModalActive] = useState(false);
 
+    // --- Novos estados para paginação ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10; // Máximo de 10 itens por página
+
     const handleRelatorioUpdated = (updatedRelatorio: Relatorio) => {
         setRelatorios(prev => prev.map(r =>
             r.id === updatedRelatorio.id ? updatedRelatorio : r
@@ -51,17 +55,20 @@ export default function HistRelatorios() {
         const fetchUserAndRelatorios = async () => {
             try {
                 setIsLoading(true);
+                setError(null);
 
                 const userResponse = await api.get('/auth/me');
-                setCurrentUserId(userResponse.data.id);
+                const userId = userResponse.data.id;
+                setCurrentUserId(userId);
 
                 const alunosResponse = await api.get('/api/alunos');
                 const alunoDoUsuario = alunosResponse.data.find(
-                    (aluno: any) => aluno.usuario.id === userResponse.data.id
+                    (aluno: any) => aluno.usuario.id === userId
                 );
 
                 if (!alunoDoUsuario) {
                     setRelatorios([]);
+                    setCurrentPage(1); // Resetar para a primeira página
                     return;
                 }
 
@@ -72,20 +79,23 @@ export default function HistRelatorios() {
                 );
 
                 setRelatorios(relatoriosDoUsuario);
-                setError(null);
+                setCurrentPage(1); // Resetar para a primeira página ao carregar novos dados
 
             } catch (error) {
+                console.error('Erro ao carregar dados:', error);
                 if (error instanceof Error) {
-                    if (error.message.includes('403')) {
-                        setError('Acesso negado: faça login para continuar');
-                        router.push('/login');
+                    if (error.message.includes('403') || error.message.includes('401')) {
+                        setError('Sessão expirada ou acesso negado. Faça login para continuar.');
+                        localStorage.removeItem('token'); // Limpa o token se for 401/403
+                        setTimeout(() => {
+                            router.push('/login');
+                        }, 3000);
                     } else {
                         setError(`Erro ao carregar relatórios: ${error.message}`);
                     }
                 } else {
                     setError('Erro desconhecido ao carregar relatórios');
                 }
-                console.error('Erro detalhado:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -102,8 +112,8 @@ export default function HistRelatorios() {
     const filteredRelatorios = relatorios.filter(relatorio => {
         const matchesSearch =
             relatorio.tipoRelatorio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            relatorio.resumoAtividades.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            relatorio.alunoNome.toLowerCase().includes(searchTerm.toLowerCase());
+            relatorio.resumoAtividades.toLowerCase().includes(searchTerm.toLowerCase());
+            // alunoNome não é necessário aqui, pois já são relatórios do próprio aluno
 
         const relatorioDataInicial = new Date(relatorio.dataInicial + 'T00:00:00');
         const relatorioDataFinal = new Date(relatorio.dataFinal + 'T00:00:00');
@@ -117,6 +127,27 @@ export default function HistRelatorios() {
 
         return matchesSearch && matchesPeriod;
     });
+
+    // --- Lógica de Paginação ---
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredRelatorios.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(filteredRelatorios.length / itemsPerPage);
+
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+        }
+    };
 
     const generateTitulo = (relatorio: Relatorio): string => {
         const tipo = relatorio.tipoRelatorio || 'Relatório';
@@ -157,9 +188,12 @@ export default function HistRelatorios() {
                                                 <input
                                                     className="input"
                                                     type="text"
-                                                    placeholder="Buscar por nome, tipo ou conteúdo..."
+                                                    placeholder="Buscar por tipo ou conteúdo..."
                                                     value={searchTerm}
-                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setSearchTerm(e.target.value);
+                                                        setCurrentPage(1); // Resetar página na nova busca
+                                                    }}
                                                 />
                                                 <span className="icon is-left">
                                                     <i className="fas fa-search"></i>
@@ -173,7 +207,10 @@ export default function HistRelatorios() {
                                                     className="input"
                                                     type="date"
                                                     value={startDate}
-                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setStartDate(e.target.value);
+                                                        setCurrentPage(1); // Resetar página no novo filtro
+                                                    }}
                                                 />
                                                 <span className="icon is-left">
                                                     <i className="fas fa-calendar-alt"></i>
@@ -187,7 +224,10 @@ export default function HistRelatorios() {
                                                     className="input"
                                                     type="date"
                                                     value={endDate}
-                                                    onChange={(e) => setEndDate(e.target.value)}
+                                                    onChange={(e) => {
+                                                        setEndDate(e.target.value);
+                                                        setCurrentPage(1); // Resetar página no novo filtro
+                                                    }}
                                                 />
                                                 <span className="icon is-left">
                                                     <i className="fas fa-calendar-alt"></i>
@@ -237,7 +277,8 @@ export default function HistRelatorios() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {filteredRelatorios.map((relatorio) => (
+                                                {/* Renderiza apenas os itens da página atual */}
+                                                {currentItems.map((relatorio) => (
                                                     <tr key={relatorio.id}>
                                                         <td>{relatorio.tipoRelatorio}</td>
                                                         <td>
@@ -278,6 +319,39 @@ export default function HistRelatorios() {
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {/* --- Controles de Paginação --- */}
+                                    {totalPages > 1 && ( // Exibe os controles apenas se houver mais de uma página
+                                        <nav className="pagination is-centered" role="navigation" aria-label="pagination">
+                                            <button
+                                                className="pagination-previous"
+                                                onClick={handlePrevPage}
+                                                disabled={currentPage === 1}
+                                            >
+                                                Anterior
+                                            </button>
+                                            <button
+                                                className="pagination-next"
+                                                onClick={handleNextPage}
+                                                disabled={currentPage === totalPages}
+                                            >
+                                                Próximo
+                                            </button>
+                                            <ul className="pagination-list">
+                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                    <li key={i}>
+                                                        <button
+                                                            onClick={() => paginate(i + 1)}
+                                                            className={`pagination-link ${currentPage === i + 1 ? 'is-current' : ''}`}
+                                                            aria-label={`Go to page ${i + 1}`}
+                                                        >
+                                                            {i + 1}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </nav>
+                                    )}
                                 </>
                             )}
                             {selectedRelatorio && (
