@@ -23,7 +23,6 @@ export default function HistRelatorios() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    // Substituído selectedMonth por startDate e endDate para o filtro de período
     const [startDate, setStartDate] = useState<string>('');
     const [endDate, setEndDate] = useState<string>('');
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
@@ -43,16 +42,19 @@ export default function HistRelatorios() {
         setSelectedRelatorio(null);
     };
 
+    // Nova função handleDownloadPdf para a tabela
+    const handleDownloadPdf = (relatorioId: number) => {
+        router.push(`/relatorios/gerar?id=${relatorioId}`);
+    };
+
     useEffect(() => {
         const fetchUserAndRelatorios = async () => {
             try {
                 setIsLoading(true);
 
-                // 1. Primeiro busca o usuário logado
                 const userResponse = await api.get('/auth/me');
                 setCurrentUserId(userResponse.data.id);
 
-                // 2. Busca todos os alunos para encontrar o correspondente ao usuário
                 const alunosResponse = await api.get('/api/alunos');
                 const alunoDoUsuario = alunosResponse.data.find(
                     (aluno: any) => aluno.usuario.id === userResponse.data.id
@@ -63,10 +65,8 @@ export default function HistRelatorios() {
                     return;
                 }
 
-                // 3. Busca todos os relatórios
                 const relatoriosResponse = await api.get('/api/relatorios');
 
-                // 4. Filtra apenas os relatórios do aluno do usuário logado
                 const relatoriosDoUsuario = relatoriosResponse.data.filter(
                     (relatorio: Relatorio) => relatorio.alunoId === alunoDoUsuario.id
                 );
@@ -100,13 +100,11 @@ export default function HistRelatorios() {
     };
 
     const filteredRelatorios = relatorios.filter(relatorio => {
-        // Lógica de busca por termo: tipo, resumo ou nome do aluno (mesmo que na página anterior)
         const matchesSearch =
             relatorio.tipoRelatorio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             relatorio.resumoAtividades.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            relatorio.alunoNome.toLowerCase().includes(searchTerm.toLowerCase()); // Adiciona busca por nome do aluno
+            relatorio.alunoNome.toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Lógica de filtragem por período (Data Inicial e Data Final)
         const relatorioDataInicial = new Date(relatorio.dataInicial + 'T00:00:00');
         const relatorioDataFinal = new Date(relatorio.dataFinal + 'T00:00:00');
 
@@ -119,11 +117,6 @@ export default function HistRelatorios() {
 
         return matchesSearch && matchesPeriod;
     });
-
-    // Remova availableMonths, pois não é mais necessário para o filtro de período
-    // const availableMonths = Array.from(
-    //     new Set(relatorios.map(r => getMonthFromDate(r.dataInicial)))
-    // ).sort((a, b) => b.localeCompare(a));
 
     const generateTitulo = (relatorio: Relatorio): string => {
         const tipo = relatorio.tipoRelatorio || 'Relatório';
@@ -155,7 +148,6 @@ export default function HistRelatorios() {
                                 </div>
                             </div>
 
-                            {/* --- Novos campos de busca aplicados aqui --- */}
                             <div className="box mb-5">
                                 <div className="field is-horizontal">
                                     <div className="field-body">
@@ -174,7 +166,6 @@ export default function HistRelatorios() {
                                                 </span>
                                             </div>
                                         </div>
-                                        {/* Campos para filtro de período (Data Inicial e Data Final) */}
                                         <div className="field">
                                             <label className="label is-small mb-1">Data Inicial:</label>
                                             <div className="control has-icons-left">
@@ -206,8 +197,6 @@ export default function HistRelatorios() {
                                     </div>
                                 </div>
                             </div>
-                            {/* --- Fim dos novos campos de busca --- */}
-
 
                             {isLoading ? (
                                 <div className="has-text-centered">
@@ -269,13 +258,19 @@ export default function HistRelatorios() {
                                                         </td>
                                                         <td>
                                                             <button
-                                                                className="button is-small is-info"
+                                                                className="button is-small is-info mr-2"
                                                                 onClick={() => {
                                                                     setSelectedRelatorio(relatorio);
                                                                     setIsDetailsModalActive(true);
                                                                 }}
                                                             >
                                                                 Detalhes
+                                                            </button>
+                                                            <button
+                                                                className="button is-small is-success"
+                                                                onClick={() => handleDownloadPdf(relatorio.id)} // Passa o ID do relatório
+                                                            >
+                                                                Baixar
                                                             </button>
                                                         </td>
                                                     </tr>

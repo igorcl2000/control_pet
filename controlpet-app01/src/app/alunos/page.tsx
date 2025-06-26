@@ -471,7 +471,7 @@ export default function GerenciarAlunos() {
                         </section>
                         <footer className="modal-card-foot">
                             <button
-                                className="button is-success"
+                                className="button is-success mr-2"
                                 onClick={() => handleUpdateAluno(editingAluno)}
                                 disabled={isLoading}
                             >

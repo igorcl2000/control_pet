@@ -302,7 +302,7 @@ export function RelatorioDetailsModal({
                                 className="button is-success"
                                 onClick={handleDownloadPdf} // Chamará a função que redireciona
                             >
-                                Baixar PDF
+                                Baixar
                             </button>
                             <button
                                 type="button"

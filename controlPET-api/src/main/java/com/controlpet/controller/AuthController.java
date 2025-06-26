@@ -6,6 +6,7 @@ import com.controlpet.dto.RegisterRequestDTO;
 import com.controlpet.dto.UserInfoDTO;
 import com.controlpet.dto.ChangePasswordRequest; // Importe o novo DTO
 import com.controlpet.model.Usuario;
+import com.controlpet.model.enums.TipoUsuario;
 import com.controlpet.repository.UsuarioRepository;
 import com.controlpet.infra.security.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,7 @@ public class AuthController {
             newUser.setSenhaHash(passwordEncoder.encode(body.senha()));
             newUser.setEmail(body.email());
             newUser.setNome(body.nome());
+            newUser.setTipo(TipoUsuario.valueOf(body.tipo()));
             this.repository.save(newUser);
 
             String token = this.tokenService.generateToken(newUser);

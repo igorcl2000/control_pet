@@ -26,7 +26,7 @@ export default function RegisterPage() {
     } = useForm<FormData>({
         mode: 'onBlur',
         defaultValues: {
-            tipo: 'ALUNO'
+            tipo: 'aluno'
         }
     });
 

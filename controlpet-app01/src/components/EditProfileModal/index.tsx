@@ -216,7 +216,7 @@ export function EditProfileModal({
                     <footer className="modal-card-foot">
                         <button
                             type="submit"
-                            className={`button is-success ${isLoading ? 'is-loading' : ''}`}
+                            className={`button is-success mr-2 ${isLoading ? 'is-loading' : ''}`}
                             disabled={isLoading}
                         >
                             {isLoading ? 'Salvando...' : 'Salvar Alterações'}
