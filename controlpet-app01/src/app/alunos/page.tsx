@@ -19,7 +19,7 @@ interface Aluno {
     usuario: Usuario;
     idade: number;
     periodoAno: string;
-    editalIngresso: string;
+    editalIngresso: string; // Certifique-se de que esta propriedade está aqui
     tipoEstudante: string;
     curso: string;
     criadoEm: string;
@@ -52,6 +52,10 @@ export default function GerenciarAlunos() {
     const [alunoToDelete, setAlunoToDelete] = useState<Aluno | null>(null);
     const [isDeleteModalActive, setIsDeleteModalActive] = useState(false);
 
+    // --- Estados para Paginação ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const [alunosPerPage] = useState(10); // Quantidade de alunos por página
+
     // Busca os dados do usuário logado e verifica se é orientador
     useEffect(() => {
         const fetchData = async () => {
@@ -60,14 +64,12 @@ export default function GerenciarAlunos() {
 
                 // Verifica o usuário logado
                 const userResponse = await api.get('/auth/me');
-                // É crucial que `userResponse.data.tipo` esteja presente e seja `orientador` ou `aluno`
-                // Se sua API retorna `tipoUsuario`, use `userResponse.data.tipoUsuario`
                 setCurrentUser(userResponse.data);
 
                 // Se não for orientador, redireciona
-                if (userResponse.data.tipoUsuario !== 'orientador') { // Ajuste para `tipoUsuario` se sua API usa esse nome
+                if (userResponse.data.tipoUsuario !== 'orientador') {
                     setError('Acesso restrito a orientadores.');
-                    router.push('/dashboard'); // Redireciona para o dashboard ou outra página segura
+                    router.push('/dashboard');
                     return;
                 }
 
@@ -78,11 +80,10 @@ export default function GerenciarAlunos() {
 
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
-                // Melhorar o tratamento de erro para caso de token inválido ou não autenticado
                 if (error instanceof AxiosError && error.response?.status === 401) {
                     setError('Sessão expirada ou não autorizado. Por favor, faça login novamente.');
-                    localStorage.removeItem('token'); // Limpa o token inválido
-                    router.push('/login'); // Redireciona para o login
+                    localStorage.removeItem('token');
+                    router.push('/login');
                 } else {
                     setError('Erro ao carregar dados dos alunos. Verifique sua conexão ou tente novamente.');
                 }
@@ -107,7 +108,50 @@ export default function GerenciarAlunos() {
         );
     });
 
-    // Formata data para exibição
+    // --- Lógica de Paginação ---
+    const indexOfLastAluno = currentPage * alunosPerPage;
+    const indexOfFirstAluno = indexOfLastAluno - alunosPerPage;
+    const currentAlunos = filteredAlunos.slice(indexOfFirstAluno, indexOfLastAluno);
+
+    const totalPages = Math.ceil(filteredAlunos.length / alunosPerPage);
+
+    const paginate = (pageNumber: number) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return; // Evita páginas inválidas
+        setCurrentPage(pageNumber);
+    };
+
+    // Gera os números das páginas para exibição na paginação
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        const maxPagesToShow = 5; // Número máximo de páginas para exibir (ex: 1, 2, 3, 4, 5)
+        let startPage: number, endPage: number;
+
+        if (totalPages <= maxPagesToShow) {
+            // Menos páginas do que o máximo, mostra todas
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            // Mais páginas, calcula o range para exibir o centro
+            if (currentPage <= Math.ceil(maxPagesToShow / 2)) {
+                startPage = 1;
+                endPage = maxPagesToShow;
+            } else if (currentPage + Math.floor(maxPagesToShow / 2) >= totalPages) {
+                startPage = totalPages - maxPagesToShow + 1;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - Math.floor(maxPagesToShow / 2);
+                endPage = currentPage + Math.floor(maxPagesToShow / 2);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+        return pageNumbers;
+    };
+
+
+    // Formata data para exibição (mantido)
     const formatarData = (dataString: string): string => {
         const options: Intl.DateTimeFormatOptions = {
             day: '2-digit',
@@ -117,31 +161,27 @@ export default function GerenciarAlunos() {
         return new Date(dataString).toLocaleDateString('pt-BR', options);
     };
 
-    // Atualiza um aluno
+    // Atualiza um aluno (mantido)
     const handleUpdateAluno = async (updatedAluno: Aluno) => {
         try {
             setIsLoading(true);
-            setError(null); // Limpa erros anteriores
+            setError(null);
 
-            // Prepara os dados no formato que a API espera (apenas campos editáveis)
             const dadosParaAPI = {
                 usuarioId: updatedAluno.usuario.id,
                 idade: updatedAluno.idade,
                 periodoAno: updatedAluno.periodoAno,
-                editalIngresso: updatedAluno.editalIngresso,
+                editalIngresso: updatedAluno.editalIngresso, // Adicionado aqui
                 tipoEstudante: updatedAluno.tipoEstudante,
                 curso: updatedAluno.curso
             };
 
-            // Atualiza no backend
             const response = await api.put(`/api/alunos/${updatedAluno.id}`, dadosParaAPI);
 
-            // Atualiza no state mantendo os dados originais do usuário (que não são alterados)
             setAlunos(prev => prev.map(aluno =>
                 aluno.id === updatedAluno.id ? { ...response.data, usuario: aluno.usuario } : aluno
             ));
 
-            // Fecha o modal
             setIsModalActive(false);
             setEditingAluno(null);
 
@@ -155,47 +195,41 @@ export default function GerenciarAlunos() {
         }
     };
 
-    // Deleta um aluno
+    // Deleta um aluno (mantido)
     const handleDeleteAluno = async () => {
         if (!alunoToDelete) return;
 
         try {
             setIsLoading(true);
-            setError(null); // Limpa erros anteriores
+            setError(null);
 
-            // Deleta no backend
             await api.delete(`/api/alunos/${alunoToDelete.id}`);
 
-            // Atualiza o state removendo o aluno deletado
             setAlunos(prev => prev.filter(aluno => aluno.id !== alunoToDelete.id));
 
-            // Fecha o modal de confirmação
             setIsDeleteModalActive(false);
             setAlunoToDelete(null);
+            // Ao deletar, recalcula a página atual se a última página ficar vazia
+            if (currentAlunos.length === 1 && currentPage > 1 && totalPages === 1) {
+                setCurrentPage(currentPage - 1);
+            }
 
         } catch (error) {
             console.error('Erro ao deletar aluno:', error);
             const axiosError = error as AxiosError<ApiErrorResponse>;
 
-            // Verifica se é um erro do Axios e se há uma resposta
             if (axiosError.response) {
-                // Se o status for 409 Conflict (ou 500 se sua API sempre retorna 500 para dependências)
-                // E a mensagem contém o texto esperado
                 if (axiosError.response.status === 409 || axiosError.response.status === 500) {
                     const apiMessage = axiosError.response.data?.message?.toLowerCase();
-                    // Assumindo que sua API retorna algo como "há relatórios associados" ou "dependências encontradas"
                     if (apiMessage && (apiMessage.includes('relatório') || apiMessage.includes('dependênci'))) {
                         setError('Não foi possível excluir o aluno. Primeiro, é necessário excluir todos os relatórios vinculados a ele.');
                     } else {
-                        // Mensagem genérica para outros erros 409/500
                         setError(axiosError.response.data?.message || 'Não foi possível excluir o aluno. Primeiro, é necessário excluir todos os relatórios vinculados a ele.');
                     }
                 } else {
-                    // Outros erros de status (ex: 404, 403, etc.)
                     setError(axiosError.response.data?.message || 'Erro ao deletar aluno. Verifique sua permissão ou tente novamente.');
                 }
             } else {
-                // Erros sem resposta (ex: rede offline)
                 setError('Erro de rede ou conexão com o servidor. Verifique sua internet.');
             }
         } finally {
@@ -203,27 +237,27 @@ export default function GerenciarAlunos() {
         }
     };
 
-    // Abre modal de edição
+    // Abre modal de edição (mantido)
     const openEditModal = (aluno: Aluno) => {
         setEditingAluno(aluno);
         setIsModalActive(true);
-        setError(null); // Limpa erros ao abrir o modal
+        setError(null);
     };
 
-    // Abre modal de confirmação de exclusão
+    // Abre modal de confirmação de exclusão (mantido)
     const openDeleteModal = (aluno: Aluno) => {
         setAlunoToDelete(aluno);
         setIsDeleteModalActive(true);
-        setError(null); // Limpa erros ao abrir o modal
+        setError(null);
     };
 
-    // Função para fechar modais e limpar estados
+    // Função para fechar modais e limpar estados (mantido)
     const closeModal = () => {
         setIsModalActive(false);
         setEditingAluno(null);
         setIsDeleteModalActive(false);
         setAlunoToDelete(null);
-        setError(null); // Garante que o erro seja limpo ao fechar qualquer modal
+        setError(null);
     };
 
     return (
@@ -252,7 +286,10 @@ export default function GerenciarAlunos() {
                                             type="text"
                                             placeholder="Buscar por nome, email, curso ou tipo..."
                                             value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            onChange={(e) => {
+                                                setSearchTerm(e.target.value);
+                                                setCurrentPage(1); // Resetar para a primeira página ao buscar
+                                            }}
                                         />
                                         <span className="icon is-left">
                                             <i className="fas fa-search"></i>
@@ -270,7 +307,6 @@ export default function GerenciarAlunos() {
                                     <p>Carregando alunos...</p>
                                 </div>
                             ) : error && !isModalActive && !isDeleteModalActive ? (
-                                // Exibe erro principal da página, não os de dentro dos modais
                                 <div className="notification is-danger">
                                     <button
                                         className="delete"
@@ -307,7 +343,7 @@ export default function GerenciarAlunos() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {filteredAlunos.map((aluno) => (
+                                                {currentAlunos.map((aluno) => (
                                                     <tr key={aluno.id}>
                                                         <td>{aluno.usuario.nome}</td>
                                                         <td>{aluno.usuario.email}</td>
@@ -336,6 +372,38 @@ export default function GerenciarAlunos() {
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    {/* Paginação Bulma */}
+                                    <nav className="pagination is-centered" role="navigation" aria-label="pagination">
+                                        <button
+                                            className="pagination-previous"
+                                            onClick={() => paginate(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            Anterior
+                                        </button>
+                                        <button
+                                            className="pagination-next"
+                                            onClick={() => paginate(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Próxima
+                                        </button>
+                                        <ul className="pagination-list">
+                                            {getPageNumbers().map(number => (
+                                                <li key={number}>
+                                                    <a
+                                                        onClick={() => paginate(number)}
+                                                        className={`pagination-link ${number === currentPage ? 'is-current' : ''}`}
+                                                        aria-label={`Página ${number}`}
+                                                        aria-current={number === currentPage ? 'page' : undefined}
+                                                    >
+                                                        {number}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </nav>
                                 </>
                             )}
                         </div>
@@ -343,7 +411,7 @@ export default function GerenciarAlunos() {
                 </div>
             </section>
 
-            {/* Modal de Edição */}
+            {/* Modal de Edição (mantido) */}
             {editingAluno && (
                 <div className={`modal ${isModalActive ? 'is-active' : ''}`}>
                     <div className="modal-background" onClick={closeModal}></div>
@@ -357,14 +425,13 @@ export default function GerenciarAlunos() {
                             ></button>
                         </header>
                         <section className="modal-card-body">
-                            {error && ( // Exibe o erro dentro do modal de edição
+                            {error && (
                                 <div className="notification is-danger">
                                     <button className="delete" onClick={() => setError(null)}></button>
                                     {error}
                                 </div>
                             )}
 
-                            {/* Campos de usuário (somente leitura) */}
                             <div className="field">
                                 <label className="label">Nome</label>
                                 <div className="control">
@@ -389,7 +456,6 @@ export default function GerenciarAlunos() {
                                 </div>
                             </div>
 
-                            {/* Campos editáveis do aluno */}
                             <div className="field">
                                 <label className="label">Curso</label>
                                 <div className="control">
@@ -454,6 +520,7 @@ export default function GerenciarAlunos() {
                                 </div>
                             </div>
 
+                            {/* NOVO CAMPO: Edital de Ingresso */}
                             <div className="field">
                                 <label className="label">Edital de Ingresso</label>
                                 <div className="control">
@@ -465,9 +532,11 @@ export default function GerenciarAlunos() {
                                             ...editingAluno,
                                             editalIngresso: e.target.value
                                         })}
+                                        placeholder="Ex: Edital 01/2023"
                                     />
                                 </div>
                             </div>
+                            
                         </section>
                         <footer className="modal-card-foot">
                             <button
@@ -489,7 +558,7 @@ export default function GerenciarAlunos() {
                 </div>
             )}
 
-            {/* Modal de Confirmação de Exclusão */}
+            {/* Modal de Confirmação de Exclusão (mantido) */}
             <div className={`modal ${isDeleteModalActive ? 'is-active' : ''}`}>
                 <div className="modal-background" onClick={closeModal}></div>
                 <div className="modal-card">
@@ -502,7 +571,7 @@ export default function GerenciarAlunos() {
                         ></button>
                     </header>
                     <section className="modal-card-body">
-                        {error && ( // Exibe o erro dentro do modal de exclusão
+                        {error && (
                             <div className="notification is-danger is-light">
                                 <button className="delete" onClick={() => setError(null)}></button>
                                 {error}

@@ -59,6 +59,11 @@ export default function RelatoriosPage() {
         setSelectedRelatorio(null);
     };
 
+    // Nova função handleDownloadPdf para a tabela
+    const handleDownloadPdf = (relatorioId: number) => {
+        router.push(`/relatorios/gerar?id=${relatorioId}`);
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -80,7 +85,7 @@ export default function RelatoriosPage() {
                 const response = await api.get('/api/relatorios');
                 setRelatorios(response.data);
                 setCurrentPage(1); // Resetar para a primeira página ao carregar novos dados
-                
+
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
                 const axiosError = error as AxiosError<ApiErrorResponse>;
@@ -304,15 +309,23 @@ export default function RelatoriosPage() {
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <button
-                                                                className="button is-small is-info"
-                                                                onClick={() => {
-                                                                    setSelectedRelatorio(relatorio);
-                                                                    setIsDetailsModalActive(true);
-                                                                }}
-                                                            >
-                                                                Detalhes
-                                                            </button>
+                                                            <div className="buttons">
+                                                                <button
+                                                                    className="button is-small is-info"
+                                                                    onClick={() => {
+                                                                        setSelectedRelatorio(relatorio);
+                                                                        setIsDetailsModalActive(true);
+                                                                    }}
+                                                                >
+                                                                    Detalhes
+                                                                </button>
+                                                                <button
+                                                                    className="button is-small is-success"
+                                                                    onClick={() => handleDownloadPdf(relatorio.id)}
+                                                                >
+                                                                    Baixar
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
