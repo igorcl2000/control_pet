@@ -411,12 +411,12 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                         </tr>
                         <tr className="c7">
                             <td className="c3" colSpan={2} rowSpan={1}>
-                                <p className="c36"><span className="c23">Nome: {studentName}</span><span>&nbsp;</span></p>
+                                <p className="c36"><span className="c23">Nome:</span><span className="c14"> {studentName}</span></p>
                             </td>
                         </tr>
                         <tr className="c7">
                             <td className="c3" colSpan={2} rowSpan={1}>
-                                <p className="c36"><span className="c6">Curso: {studentCourse}</span></p>
+                                <p className="c36"><span className="c6">Curso:</span><span className="c14"> {studentCourse}</span></p>
                             </td>
                         </tr>
                     </tbody>

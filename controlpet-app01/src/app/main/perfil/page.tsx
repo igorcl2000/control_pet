@@ -176,10 +176,12 @@ export default function Perfil() {
                     <div className="media-content">
                       <p className="title is-4">{usuario?.nome}</p>
                       <p className="subtitle is-6">{usuario?.email}</p>
-                      {/* Exibe o tipo de usuário */}
-                      <p className="subtitle is-6 has-text-grey">
-                        Tipo: <strong className="has-text-info">{usuario?.tipoUsuario?.toUpperCase()}</strong>
-                      </p>
+                      {/* Exibe o tipo de usuário apenas se for 'ORIENTADOR' */}
+                      {usuario?.tipoUsuario?.toUpperCase() === 'ORIENTADOR' && (
+                        <p className="subtitle is-6 has-text-grey">
+                          Tipo: <strong className="has-text-info">{usuario?.tipoUsuario?.toUpperCase()}</strong>
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -280,8 +282,6 @@ export default function Perfil() {
                     // Conteúdo para Orientador/Admin (sem informações de aluno)
                     <div className="content mt-5">
                       <p>
-                        Este é o perfil de um **{usuario?.tipoUsuario?.toUpperCase()}**.
-                        Não há informações de cadastro de aluno PET a serem exibidas.
                       </p>
                     </div>
                   )}

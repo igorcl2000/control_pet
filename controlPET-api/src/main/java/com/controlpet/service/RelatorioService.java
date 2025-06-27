@@ -5,8 +5,10 @@ import com.controlpet.model.Aluno;
 import com.controlpet.model.Relatorio;
 import com.controlpet.repository.AlunoRepository;
 import com.controlpet.repository.RelatorioRepository;
+import com.controlpet.repository.AvaliacaoRelatorioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 
@@ -15,11 +17,14 @@ public class RelatorioService {
 
     private final RelatorioRepository relatorioRepository;
     private final AlunoRepository alunoRepository;
+    private final AvaliacaoRelatorioRepository avaliacaoRelatorioRepository; // Injete este
 
-    public RelatorioService(RelatorioRepository relatorioRepository, 
-                          AlunoRepository alunoRepository) {
+    public RelatorioService(RelatorioRepository relatorioRepository,
+                            AlunoRepository alunoRepository,
+                            AvaliacaoRelatorioRepository avaliacaoRelatorioRepository) { // Adicione ao construtor
         this.relatorioRepository = relatorioRepository;
         this.alunoRepository = alunoRepository;
+        this.avaliacaoRelatorioRepository = avaliacaoRelatorioRepository; // Inicialize
     }
 
     @Transactional
@@ -78,6 +83,11 @@ public class RelatorioService {
         if (!relatorioRepository.existsById(id)) {
             throw new IllegalArgumentException("Relatório não encontrado");
         }
+
+        // NOVO PASSO: Primeiro, delete as avaliações de relatório associadas
+        avaliacaoRelatorioRepository.deleteByRelatorioId(id);
+
+        // Em seguida, delete o relatório
         relatorioRepository.deleteById(id);
     }
 }
