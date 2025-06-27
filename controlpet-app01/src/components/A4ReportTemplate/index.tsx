@@ -1,4 +1,3 @@
-// src/components/A4ReportTemplate.tsx
 import React from 'react';
 
 // Define as props que o componente do template irá receber
@@ -17,7 +16,19 @@ interface A4ReportTemplateProps {
     activityEndDate?: string; // Novo: Data de fim das atividades
     announcement?: string; // Novo: Campo para o Edital
     studentSignatureName?: string; // Novo: Nome do aluno para a assinatura
+    // NOVAS PROPS PARA A AVALIAÇÃO DO TUTOR
+    tutorCargaHoraria?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    tutorInteresseAtividades?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    tutorHabilidadesDesenvolvidas?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    tutorOutrasInformacoes?: string;
 }
+
+// Função Auxiliar para Quebras de Linha
+const formatTextWithLineBreaks = (text: string | undefined): React.ReactNode => {
+    const safeText = text || '';
+    // Retorna diretamente o div para evitar aninhamento incorreto
+    return <div className="c8" dangerouslySetInnerHTML={{ __html: safeText.replace(/\n/g, '<br />') }} />;
+};
 
 const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     institutionPetGroup,
@@ -33,8 +44,18 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     activityStartDate = '', // Novo
     activityEndDate = '', // Novo
     announcement = '', // Novo
-    studentSignatureName = '' // Novo
+    studentSignatureName = '', // Novo
+    // NOVAS PROPS
+    tutorCargaHoraria = '',
+    tutorInteresseAtividades = '',
+    tutorHabilidadesDesenvolvidas = '',
+    tutorOutrasInformacoes = ''
 }) => {
+    // Função auxiliar para marcar a opção correta
+    const getCheckedMark = (value: string, option: string) => {
+        return value.toUpperCase() === option.toUpperCase() ? 'X' : ' ';
+    };
+
     const pageStyles = `
     @import url(https://themes.googleusercontent.com/fonts/css?kit=fpjTOVmNbO4Lz34iLyLyptLU5zdwzqyXAFhQ3EpAK6bTA);
 
@@ -145,6 +166,34 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
         width: 78.0mm;
     }
 
+    /* NOVAS CLASSES PARA A AVALIAÇÃO DO TUTOR */
+    .c51 {
+        border: 1pt solid #000000;
+        padding: 0pt 5.4pt;
+        vertical-align: middle;
+        background-color: #d9d9d9;
+        width: 167.4mm; /* Largura total da tabela de avaliação */
+    }
+    .c52 {
+        border: 1pt solid #000000;
+        padding: 0pt 5.4pt;
+        vertical-align: middle;
+        height: 7.3mm; /* Altura padrão para linhas de avaliação */
+    }
+    .c53 {
+        border: 1pt solid #000000;
+        padding: 0pt 5.4pt;
+        vertical-align: middle;
+        width: 110.0mm; /* Largura para a descrição da avaliação */
+    }
+    .c54 {
+        border: 1pt solid #000000;
+        padding: 0pt 5.4pt;
+        vertical-align: middle;
+        width: 57.0mm; /* Largura para as opções de Ruim/Regular/Bom/Ótimo */
+        white-space: nowrap; /* Evita que o texto quebre em várias linhas */
+    }
+
     .c10 { -webkit-text-decoration-skip: none; color: #000000; font-weight: 700; text-decoration: underline; vertical-align: baseline; text-decoration-skip-ink: none; font-size: 12pt; font-family: "Arial"; font-style: normal }
     .c27 { color: #000000; font-weight: 400; text-decoration: none; vertical-align: baseline; font-size: 9pt; font-family: "Calibri"; font-style: normal }
     .c6 { color: #000000; font-weight: 700; text-decoration: none; vertical-align: baseline; font-size: 11pt; font-family: "Arial"; font-style: normal }
@@ -181,7 +230,22 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     .c19 { padding-top: 0pt; padding-bottom: 0pt; line-height: 1.15; text-align: left }
     .c50 { margin-left: 216pt; text-indent: 36pt }
 
-    .c0 { margin-left: -5.4pt; border-spacing: 0; border-collapse: collapse; margin-right: auto }
+    .c0 {
+    /* Remova o margin-left negativo */
+    /* margin-left: -5.4pt; */
+
+    border-spacing: 0;
+    border-collapse: collapse;
+    
+    /* Centraliza o bloco horizontalmente */
+    margin: 0 auto; 
+    
+    /* Adicione uma largura para que margin: 0 auto; funcione */
+    /* Você precisará ajustar esta largura para que a tabela se ajuste ao seu layout */
+    width: 90%; /* Exemplo: 90% da largura do contêiner pai */
+    /* Ou uma largura fixa, se preferir: */
+    /* width: 190mm; */ /* Ajuste conforme necessário, considerando o A4 (210mm) e as margens */
+    }
     .c30 { border-top: 0.5pt solid #000000; }
     .c32 { background-color: #d9d9d9 }
 
@@ -358,37 +422,64 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     </tbody>
                 </table>
                 <p className="c4 c5"><span className="c8"></span></p>
+                {/* NOVO MÓDULO: AVALIAÇÃO DO TUTOR SOBRE O PETIANO */}
                 <table className="c0">
                     <thead>
                         <tr className="c18">
-                            <td className="c16" colSpan={1} rowSpan={1}>
-                                <p className="c2"><span className="c22">DADOS DO GRUPO PET INSTITUCIONAL</span></p>
+                            <td className="c16" colSpan={2} rowSpan={1}>
+                                <p className="c2"><span className="c22">AVALIAÇÃO DO TUTOR SOBRE O PETIANO</span></p>
                             </td>
                         </tr>
                     </thead>
                     <tbody>
+                        <tr className="c52">
+                            <td className="c53" colSpan={1} rowSpan={1}>
+                                <p className="c4"><span className="c14">1 - Cumprimento de Carga Horária: &nbsp; &nbsp;20 horas semanais.</span></p>
+                            </td>
+                            <td className="c54" colSpan={1} rowSpan={1}>
+                                <p className="c4" style={{ textAlign: 'left' }}>
+                                    <span className="c14">
+                                        {tutorCargaHoraria}
+                                    </span>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr className="c52">
+                            <td className="c53" colSpan={1} rowSpan={1}>
+                                <p className="c4"><span className="c14">2 - Interesse nas atividades de ensino, pesquisa e extensão:</span></p>
+                            </td>
+                            <td className="c54" colSpan={1} rowSpan={1}>
+                                <p className="c4" style={{ textAlign: 'left' }}>
+                                    <span className="c14">
+                                        {tutorInteresseAtividades}
+                                    </span>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr className="c52">
+                            <td className="c53" colSpan={1} rowSpan={1}>
+                                <p className="c4"><span className="c14">3-Habilidades desenvolvidas: </span><span className="c28 c29">(autonomia, espírito crítico, criatividade, conhecimento de métodos e técnicas de pesquisa, uso de outras línguas, etc)</span></p>
+                            </td>
+                            <td className="c54" colSpan={1} rowSpan={1}>
+                                <p className="c4" style={{ textAlign: 'left' }}>
+                                    <span className="c14">
+                                        {tutorHabilidadesDesenvolvidas}
+                                    </span>
+                                </p>
+                            </td>
+                        </tr>
                         <tr className="c39">
-                            <td className="c25" colSpan={1} rowSpan={1}>
-                                <p className="c4">
-                                    <span className="c14">Grupo PET Institucional: {institutionPetGroup}</span>
-                                </p>
-                            </td>
-                        </tr>
-                        <tr className="c37">
-                            <td className="c25" colSpan={1} rowSpan={1}>
-                                <p className="c4"><span className="c14">Edital: {announcement}</span></p>
-                            </td>
-                        </tr>
-                        <tr className="c37">
-                            <td className="c25" colSpan={1} rowSpan={1}>
-                                <p className="c4">
-                                    <span className="c14">Tutor: {tutorName}</span>
-                                </p>
+                            <td className="c41" colSpan={2} rowSpan={1}>
+                                <p className="c4"><span className="c14">4 - Outras informações:</span></p>
+                                {/* REMOVIDO <p> E <span> EXTERNOS */}
+                                {formatTextWithLineBreaks(tutorOutrasInformacoes)}
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <p className="c4 c5"><span className="c8"></span></p>
+                {/* FIM DO NOVO MÓDULO */}
+
                 <table className="c0">
                     <thead>
                         <tr className="c18">
@@ -400,7 +491,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     <tbody>
                         <tr className="c1">
                             <td className="c49" colSpan={2} rowSpan={1}>
-                                <p className="c4"><span className="c8">{activitiesSummary}</span></p>
+                                {/* REMOVIDO <p> E <span> EXTERNOS */}
+                                {formatTextWithLineBreaks(activitiesSummary)}
                             </td>
                         </tr>
                     </tbody>
@@ -417,14 +509,16 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     <tbody>
                         <tr className="c31">
                             <td className="c41" colSpan={1} rowSpan={1}>
-                                {/* Removido 'c5' daqui para que a altura do parágrafo seja auto */}
-                                <p className="c4"><span className="c8">{petitionerComments}</span></p>
+                                {/* REMOVIDO <p> E <span> EXTERNOS */}
+                                {formatTextWithLineBreaks(petitionerComments)}
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <p className="c48"><span className="c33">ENTREGAR ATÉ O 5º DIA DE CADA MÊS</span></p>
-                <p className="c2"><span className="c8">Data hoje: {todayDate}</span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c2"><span className="c8">Ituiutaba, {todayDate}</span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '30pt' }}>
                     {/* Coluna do Aluno */}
@@ -462,9 +556,11 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                 <p className="c4 c5"><span className="c8"></span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
                 <p className="c2"><span className="c20">Assinatura eletrônica via Docs no Virtual IF</span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
                 <div>
                     <p className="c2 c30">
-                        <span className="c27">AV Doutor Randolfo Borges Junior 2900 &ndash; Univerdecidade- Uberaba (MG) - CEP: 38.064-200</span>
+                        <span className="c27">AV Doutor Randolfo Borges Junior 2900 – Univerdecidade- Uberaba (MG) - CEP: 38.064-200</span>
                     </p>
                     <p className="c2 c30">
                         <span className="c27">Fones: (034) 3326-1121 / Fax: (034) 3326-1101</span>

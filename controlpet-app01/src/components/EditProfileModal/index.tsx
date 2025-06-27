@@ -56,11 +56,6 @@ export function EditProfileModal({
             return;
         }
 
-        if (!formData.periodoAno.match(/^\d{4}\.\d$/)) {
-            setError('Período/Ano deve estar no formato AAAA.P (ex: 2024.1)');
-            return;
-        }
-
         setIsLoading(true);
         setError(null);
 
@@ -151,7 +146,7 @@ export function EditProfileModal({
                         </div>
 
                         <div className="field">
-                            <label className="label">Período/Ano*</label>
+                            <label className="label">Período*</label>
                             <div className="control">
                                 <input
                                     className="input"

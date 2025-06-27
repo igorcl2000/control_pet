@@ -212,7 +212,7 @@ export default function Perfil() {
                             </div>
 
                             <div className="field">
-                              <label className="label">Período/Ano</label>
+                              <label className="label">Período</label>
                               <div className="control">
                                 <input
                                   className="input"

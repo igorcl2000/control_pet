@@ -38,11 +38,6 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
             return;
         }
 
-        if (!formData.periodoAno.match(/^\d{4}\.\d$/)) {
-            setError('Período/Ano deve estar no formato AAAA.P (ex: 2024.1)');
-            return;
-        }
-
         setIsLoading(true);
         setError(null);
 
@@ -108,7 +103,7 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
                         </div>
 
                         <div className="field">
-                            <label className="label">Período/Ano*</label>
+                            <label className="label">Período*</label>
                             <div className="control">
                                 <input
                                     className="input"
@@ -173,7 +168,7 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
                     <footer className="modal-card-foot">
                         <button
                             type="submit"
-                            className={`button is-success ${isLoading ? 'is-loading' : ''}`}
+                            className={`button is-success mr-2 ${isLoading ? 'is-loading' : ''}`}
                             disabled={isLoading}
                         >
                             {isLoading ? 'Salvando...' : 'Criar Perfil'}

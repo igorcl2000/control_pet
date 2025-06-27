@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/services/api';
 import { RelatorioDetailsModal } from '@/components/RelatorioDetailsModal';
+import { AvaliacaoRelatorioModal } from '@/components/AvaliacaoRelatorioModal'; // Importe seu novo modal aqui!
 import { AxiosError } from 'axios';
 
 interface Relatorio {
@@ -41,6 +42,8 @@ export default function RelatoriosPage() {
     const [endDate, setEndDate] = useState<string>('');
     const [selectedRelatorio, setSelectedRelatorio] = useState<Relatorio | null>(null);
     const [isDetailsModalActive, setIsDetailsModalActive] = useState(false);
+    // Novo estado para controlar o modal de avaliação
+    const [isAvaliacaoModalActive, setIsAvaliacaoModalActive] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
 
     // --- Novos estados para paginação ---
@@ -59,7 +62,19 @@ export default function RelatoriosPage() {
         setSelectedRelatorio(null);
     };
 
-    // Nova função handleDownloadPdf para a tabela
+    // Função para lidar com a avaliação do relatório
+    const handleAvaliacaoConcluida = (relatorioAvaliado: Relatorio) => {
+        // Aqui você pode atualizar o estado dos relatórios se a avaliação mudar algo neles
+        // Por exemplo, se a avaliação adicionar um campo 'statusAvaliacao' ao relatório
+        setRelatorios(prev => prev.map(r =>
+            r.id === relatorioAvaliado.id ? relatorioAvaliado : r
+        ));
+        setIsAvaliacaoModalActive(false); // Fechar o modal após a avaliação
+        setSelectedRelatorio(null); // Limpar o relatório selecionado
+        // Opcional: recarregar os relatórios para garantir que os dados estejam atualizados
+        // fetchData();
+    };
+
     const handleDownloadPdf = (relatorioId: number) => {
         router.push(`/relatorios/gerar?id=${relatorioId}`);
     };
@@ -81,10 +96,9 @@ export default function RelatoriosPage() {
                     return;
                 }
 
-                // Buscar todos os relatórios (se a API não suportar paginação)
                 const response = await api.get('/api/relatorios');
                 setRelatorios(response.data);
-                setCurrentPage(1); // Resetar para a primeira página ao carregar novos dados
+                setCurrentPage(1);
 
             } catch (error) {
                 console.error('Erro ao carregar dados:', error);
@@ -133,7 +147,6 @@ export default function RelatoriosPage() {
         return matchesSearch && matchesPeriod;
     });
 
-    // --- Lógica de Paginação ---
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredRelatorios.slice(indexOfFirstItem, indexOfLastItem);
@@ -154,7 +167,6 @@ export default function RelatoriosPage() {
         }
     };
 
-    // Renderização condicional para estados iniciais
     if (isLoading && !error) {
         return (
             <section className="section">
@@ -184,7 +196,6 @@ export default function RelatoriosPage() {
         );
     }
 
-    // Se não for orientador, exibe mensagem e redireciona
     if (currentUser?.tipoUsuario !== 'orientador') {
         return (
             <section className="section">
@@ -218,7 +229,7 @@ export default function RelatoriosPage() {
                                                     value={searchTerm}
                                                     onChange={(e) => {
                                                         setSearchTerm(e.target.value);
-                                                        setCurrentPage(1); // Resetar página na nova busca
+                                                        setCurrentPage(1);
                                                     }}
                                                 />
                                                 <span className="icon is-left">
@@ -235,7 +246,7 @@ export default function RelatoriosPage() {
                                                     value={startDate}
                                                     onChange={(e) => {
                                                         setStartDate(e.target.value);
-                                                        setCurrentPage(1); // Resetar página no novo filtro
+                                                        setCurrentPage(1);
                                                     }}
                                                 />
                                                 <span className="icon is-left">
@@ -252,7 +263,7 @@ export default function RelatoriosPage() {
                                                     value={endDate}
                                                     onChange={(e) => {
                                                         setEndDate(e.target.value);
-                                                        setCurrentPage(1); // Resetar página no novo filtro
+                                                        setCurrentPage(1);
                                                     }}
                                                 />
                                                 <span className="icon is-left">
@@ -287,7 +298,6 @@ export default function RelatoriosPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {/* Renderiza apenas os itens da página atual */}
                                                 {currentItems.map((relatorio) => (
                                                     <tr key={relatorio.id}>
                                                         <td>{relatorio.alunoNome}</td>
@@ -310,6 +320,16 @@ export default function RelatoriosPage() {
                                                         </td>
                                                         <td>
                                                             <div className="buttons">
+                                                                {/* Novo botão "Avaliar" */}
+                                                                <button
+                                                                    className="button is-small is-warning" // Exemplo de cor
+                                                                    onClick={() => {
+                                                                        setSelectedRelatorio(relatorio);
+                                                                        setIsAvaliacaoModalActive(true);
+                                                                    }}
+                                                                >
+                                                                    Avaliar
+                                                                </button>
                                                                 <button
                                                                     className="button is-small is-info"
                                                                     onClick={() => {
@@ -334,7 +354,7 @@ export default function RelatoriosPage() {
                                     </div>
 
                                     {/* --- Controles de Paginação --- */}
-                                    {totalPages > 1 && ( // Exibe os controles apenas se houver mais de uma página
+                                    {totalPages > 1 && (
                                         <nav className="pagination is-centered" role="navigation" aria-label="pagination">
                                             <button
                                                 className="pagination-previous"
@@ -375,6 +395,16 @@ export default function RelatoriosPage() {
                                     relatorio={selectedRelatorio}
                                     onRelatorioUpdated={handleRelatorioUpdated}
                                     onRelatorioDeleted={handleRelatorioDeleted}
+                                />
+                            )}
+
+                            {/* Renderização do AvaliacaoRelatorioModal */}
+                            {selectedRelatorio && (
+                                <AvaliacaoRelatorioModal
+                                    isActive={isAvaliacaoModalActive}
+                                    onClose={() => setIsAvaliacaoModalActive(false)}
+                                    relatorio={selectedRelatorio}
+                                    onAvaliacaoConcluida={handleAvaliacaoConcluida} // Passe a função de callback
                                 />
                             )}
                         </div>

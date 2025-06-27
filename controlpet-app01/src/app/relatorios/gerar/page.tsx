@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import api from '@/services/api';
 import A4ReportTemplate from '../../../components/A4ReportTemplate';
 
-// Interfaces for type safety
+// Interfaces for type safety (mantidas as mesmas)
 interface Usuario {
     id: number;
     nome: string;
@@ -15,7 +15,7 @@ interface Usuario {
 
 interface Aluno {
     id: number;
-    usuario: Usuario; // This will contain the student's user data
+    usuario: Usuario;
     idade: number;
     periodoAno: string;
     editalIngresso: string;
@@ -33,13 +33,32 @@ interface ReportData {
     dataEnvio?: string;
     resumoAtividades: string;
     comentarios?: string;
-    alunoId: number; // Important: The ID of the student linked to this report
-    alunoNome?: string; // If your backend already sends student name with report
+    alunoId: number;
+    alunoNome?: string;
 }
 
-// Custom date formatting function
+interface AvaliacaoTutorData {
+    id?: number;
+    relatorioId: number;
+    cargaHoraria: string;
+    interesseAtividades: string;
+    habilidadesDesenvolvidas: string;
+    outrasInformacoes: string;
+}
+
+type AvaliacaoRating = 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+
+const getValidRating = (rating: string | undefined | null): AvaliacaoRating => {
+    if (rating) {
+        const upperRating = rating.toUpperCase();
+        if (['RUIM', 'REGULAR', 'BOM', 'OTIMO'].includes(upperRating)) {
+            return upperRating as AvaliacaoRating;
+        }
+    }
+    return '';
+};
+
 const formatarData = (dataString: string): string => {
-    // Ensure the date string is in 'YYYY-MM-DD' format before splitting
     if (!dataString) return 'N/A';
     const [ano, mes, dia] = dataString.split('-');
     return `${dia}/${mes}/${ano}`;
@@ -51,13 +70,16 @@ const ReportPage: React.FC<{}> = () => {
 
     const [reportData, setReportData] = useState<ReportData | null>(null);
     const [alunoData, setAlunoData] = useState<Aluno | null>(null);
+    const [avaliacaoTutorData, setAvaliacaoTutorData] = useState<AvaliacaoTutorData | null>(null);
+
     const [isLoadingReport, setIsLoadingReport] = useState(true);
     const [errorReport, setErrorReport] = useState<string | null>(null);
 
     const [html2pdf, setHtml2pdf] = useState<any>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
-    // Load html2pdf.js dynamically
+    const [downloadInitiated, setDownloadInitiated] = useState(false);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             import('html2pdf.js')
@@ -70,7 +92,6 @@ const ReportPage: React.FC<{}> = () => {
         }
     }, []);
 
-    // Function to fetch report data and associated student data
     const fetchData = useCallback(async () => {
         if (!relatorioId) {
             setErrorReport('ID do relatório não fornecido.');
@@ -81,17 +102,39 @@ const ReportPage: React.FC<{}> = () => {
         setIsLoadingReport(true);
         setErrorReport(null);
         try {
-            // Fetch report data
             const reportResponse = await api.get(`/api/relatorios/${relatorioId}`);
             const fetchedReportData: ReportData = reportResponse.data;
             setReportData(fetchedReportData);
 
-            // Now, use reportData.alunoId to fetch the specific student's data
             if (fetchedReportData.alunoId) {
                 const alunoResponse = await api.get(`/api/alunos/${fetchedReportData.alunoId}`);
                 setAlunoData(alunoResponse.data);
             } else {
                 setErrorReport('ID do aluno não encontrado no relatório.');
+            }
+
+            try {
+                const avaliacaoResponse = await api.get<AvaliacaoTutorData>(`/api/avaliacoes-relatorio/relatorio/${relatorioId}`);
+                if (avaliacaoResponse.data) {
+                    setAvaliacaoTutorData(avaliacaoResponse.data);
+                } else {
+                    setAvaliacaoTutorData({
+                        relatorioId: parseInt(relatorioId),
+                        cargaHoraria: 'OTIMO',
+                        interesseAtividades: 'OTIMO',
+                        habilidadesDesenvolvidas: 'OTIMO',
+                        outrasInformacoes: '',
+                    });
+                }
+            } catch (avaliacaoError: any) {
+                console.warn('Erro ao buscar avaliação ou nenhuma avaliação encontrada. Preenchendo com valores padrão:', avaliacaoError);
+                setAvaliacaoTutorData({
+                    relatorioId: parseInt(relatorioId),
+                    cargaHoraria: 'OTIMO',
+                    interesseAtividades: 'OTIMO',
+                    habilidadesDesenvolvidas: 'OTIMO',
+                    outrasInformacoes: '',
+                });
             }
 
         } catch (error: any) {
@@ -102,18 +145,23 @@ const ReportPage: React.FC<{}> = () => {
         }
     }, [relatorioId]);
 
-    // Call data fetching when the component mounts or report ID changes
     useEffect(() => {
         fetchData();
     }, [fetchData]);
 
-    const todayDate = new Date().toLocaleDateString('pt-BR');
+    const todayDate = new Intl.DateTimeFormat('pt-BR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    }).format(new Date());
 
-    const handleDownloadPdf = () => {
-        if (contentRef.current && html2pdf) {
+    const handleDownloadPdf = useCallback(() => {
+        if (contentRef.current && html2pdf && reportData && alunoData && !downloadInitiated) {
+            setDownloadInitiated(true);
+
             const options = {
                 margin: [5, 5, 5, 5],
-                filename: `relatorio_${alunoData?.usuario?.nome}.pdf`,
+                filename: `relatorio_${alunoData?.usuario?.nome || 'documento'}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
                     scale: 2,
@@ -132,10 +180,27 @@ const ReportPage: React.FC<{}> = () => {
 
             const element = contentRef.current;
             html2pdf.from(element).set(options).save();
+
+        } else if (downloadInitiated) {
+            console.log("Download já foi iniciado. Ignorando chamadas múltiplas.");
         } else {
-            console.warn("html2pdf.js ainda não carregado ou contentRef é nulo.");
+            console.warn("html2pdf.js ainda não carregado, ou dados pendentes, ou contentRef é nulo.");
         }
+    }, [html2pdf, reportData, alunoData, downloadInitiated]);
+
+    // O useEffect para download automático continua o mesmo para garantir o download inicial
+    useEffect(() => {
+        if (!isLoadingReport && reportData && alunoData && html2pdf && !downloadInitiated) {
+            handleDownloadPdf();
+        }
+    }, [isLoadingReport, reportData, alunoData, html2pdf, downloadInitiated, handleDownloadPdf]);
+
+
+    // NOVA FUNÇÃO PARA ATUALIZAR A PÁGINA
+    const handleRefreshPage = () => {
+        window.location.reload();
     };
+
 
     if (isLoadingReport) {
         return (
@@ -162,10 +227,9 @@ const ReportPage: React.FC<{}> = () => {
         );
     }
 
-    // Map report data to A4ReportTemplate props
     const templateProps = {
-        institutionPetGroup: "PET Computação Ituiutaba", // Adjust as needed
-        tutorName: "Ailton Luiz Dias Siqueira Junior", // Adjust as needed
+        institutionPetGroup: "PET Computação Ituiutaba",
+        tutorName: "Ailton Luiz Dias Siqueira Junior",
         todayDate: todayDate,
         studentName: alunoData?.usuario?.nome || 'N/A',
         studentCourse: alunoData?.curso || 'N/A',
@@ -174,11 +238,14 @@ const ReportPage: React.FC<{}> = () => {
         reportMonth: new Date(reportData.dataInicial).toLocaleString('pt-BR', { month: 'long' }),
         reportYear: new Date(reportData.dataInicial).getFullYear().toString(),
         studentType: alunoData?.tipoEstudante || 'N/A',
-        // Apply the custom formatting function here
         activityStartDate: formatarData(reportData.dataInicial),
         activityEndDate: formatarData(reportData.dataFinal),
         announcement: alunoData?.editalIngresso || 'N/A',
         studentSignatureName: alunoData?.usuario?.nome || 'N/A',
+        tutorCargaHoraria: getValidRating(avaliacaoTutorData?.cargaHoraria),
+        tutorInteresseAtividades: getValidRating(avaliacaoTutorData?.interesseAtividades),
+        tutorHabilidadesDesenvolvidas: getValidRating(avaliacaoTutorData?.habilidadesDesenvolvidas),
+        tutorOutrasInformacoes: avaliacaoTutorData?.outrasInformacoes || '',
     };
 
     return (
@@ -192,13 +259,15 @@ const ReportPage: React.FC<{}> = () => {
             paddingTop: '20px',
             paddingBottom: '40px',
         }}>
+            {/* O botão agora chama handleRefreshPage */}
             <button
                 className="download-button button is-primary"
-                onClick={handleDownloadPdf}
+                onClick={handleRefreshPage} // MUDANÇA AQUI
                 style={{ marginBottom: '20px' }}
-                disabled={!html2pdf || isLoadingReport}
+                // O botão de "Atualizar" não precisa ser desabilitado pelas mesmas condições do download
+                disabled={isLoadingReport} // Pode ser desabilitado enquanto os dados estão carregando
             >
-                {html2pdf ? "Download PDF" : "Carregando PDF..."}
+                {isLoadingReport ? "Carregando..." : "Download"} {/* MUDANÇA AQUI */}
             </button>
 
             <div ref={contentRef} style={{

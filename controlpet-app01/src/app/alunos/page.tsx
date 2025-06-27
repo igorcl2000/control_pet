@@ -350,7 +350,7 @@ export default function GerenciarAlunos() {
                                                         <td>{aluno.curso}</td>
                                                         <td>{aluno.tipoEstudante}</td>
                                                         <td>{aluno.idade}</td>
-                                                        <td>{aluno.periodoAno}</td>
+                                                        <td>{aluno.periodoAno}º</td>
                                                         <td>
                                                             <div className="buttons">
                                                                 <button
@@ -515,7 +515,6 @@ export default function GerenciarAlunos() {
                                             ...editingAluno,
                                             periodoAno: e.target.value
                                         })}
-                                        placeholder="Ex: 2025.1"
                                     />
                                 </div>
                             </div>

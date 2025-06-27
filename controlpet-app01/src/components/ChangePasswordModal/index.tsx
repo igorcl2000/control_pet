@@ -87,7 +87,7 @@ export function ChangePasswordModal({ isActive, onClose, onSubmit }: ChangePassw
                         </div>
                     </section>
                     <footer className="modal-card-foot">
-                        <button type="submit" className="button is-success">Alterar Senha</button>
+                        <button type="submit" className="button is-success mr-2">Alterar Senha</button>
                         <button type="button" className="button" onClick={onClose}>Cancelar</button>
                     </footer>
                 </form>
