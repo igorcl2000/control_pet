@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/services/api';
 import { AxiosError } from 'axios'; // Importar AxiosError para melhor tipagem de erros
 
+// Interfaces
 interface Usuario {
     id: number;
     nome: string;
@@ -19,7 +20,7 @@ interface Aluno {
     usuario: Usuario;
     idade: number;
     periodoAno: string;
-    editalIngresso: string; // Certifique-se de que esta propriedade está aqui
+    editalIngresso: string;
     tipoEstudante: string;
     curso: string;
     criadoEm: string;
@@ -33,7 +34,6 @@ interface UserInfo {
     tipoUsuario: string;
 }
 
-// Tipo para erros da API (se a API retornar um formato específico para erros)
 interface ApiErrorResponse {
     message: string;
     statusCode?: number;
@@ -51,6 +51,12 @@ export default function GerenciarAlunos() {
     const [isModalActive, setIsModalActive] = useState(false);
     const [alunoToDelete, setAlunoToDelete] = useState<Aluno | null>(null);
     const [isDeleteModalActive, setIsDeleteModalActive] = useState(false);
+    // Novo estado para a mensagem de reset de senha
+    const [resetPasswordMessage, setResetPasswordMessage] = useState<{ type: 'success' | 'danger', text: string } | null>(null);
+    // Novos estados para o modal de confirmação de reset de senha
+    const [isResetConfirmModalActive, setIsResetConfirmModalActive] = useState(false);
+    const [alunoToResetPassword, setAlunoToResetPassword] = useState<Aluno | null>(null);
+
 
     // --- Estados para Paginação ---
     const [currentPage, setCurrentPage] = useState(1);
@@ -166,12 +172,13 @@ export default function GerenciarAlunos() {
         try {
             setIsLoading(true);
             setError(null);
+            setResetPasswordMessage(null); // Limpa mensagens de reset ao atualizar aluno
 
             const dadosParaAPI = {
                 usuarioId: updatedAluno.usuario.id,
                 idade: updatedAluno.idade,
                 periodoAno: updatedAluno.periodoAno,
-                editalIngresso: updatedAluno.editalIngresso, // Adicionado aqui
+                editalIngresso: updatedAluno.editalIngresso,
                 tipoEstudante: updatedAluno.tipoEstudante,
                 curso: updatedAluno.curso
             };
@@ -202,6 +209,7 @@ export default function GerenciarAlunos() {
         try {
             setIsLoading(true);
             setError(null);
+            setResetPasswordMessage(null); // Limpa mensagens de reset ao deletar
 
             await api.delete(`/api/alunos/${alunoToDelete.id}`);
 
@@ -237,11 +245,62 @@ export default function GerenciarAlunos() {
         }
     };
 
+    // Função para iniciar o processo de reset de senha, abrindo o modal de confirmação
+    const openResetConfirmModal = (aluno: Aluno) => {
+        setAlunoToResetPassword(aluno);
+        setIsResetConfirmModalActive(true);
+        setError(null); // Limpa erros gerais
+        setResetPasswordMessage(null); // Limpa mensagens de reset anteriores
+    };
+
+
+    // Função para executar o reset de senha após a confirmação
+    const handleResetPassword = async () => {
+        if (!alunoToResetPassword) return; // Garante que há um aluno selecionado
+
+        setIsLoading(true);
+        setResetPasswordMessage(null); // Limpa qualquer mensagem anterior
+        setError(null); // Limpa erros gerais
+
+        try {
+            await api.put(`/auth/reset-password/${alunoToResetPassword.usuario.id}`);
+            setResetPasswordMessage({ type: 'success', text: `Senha do aluno ${alunoToResetPassword.usuario.nome} resetada para "Senha123" com sucesso!` });
+            // Fechar o modal de confirmação após o sucesso
+            setIsResetConfirmModalActive(false);
+            setAlunoToResetPassword(null);
+        } catch (error) {
+            console.error('Erro ao resetar senha:', error);
+            const axiosError = error as AxiosError<ApiErrorResponse>;
+            let errorMessage = 'Erro ao resetar senha. Tente novamente.';
+
+            if (axiosError.response) {
+                if (axiosError.response.status === 401) {
+                    errorMessage = 'Você não está autorizado. Sua sessão pode ter expirado. Faça login novamente.';
+                    localStorage.removeItem('token');
+                    router.push('/login');
+                } else if (axiosError.response.status === 403) {
+                    errorMessage = 'Acesso negado. Apenas orientadores podem resetar senhas.';
+                } else if (axiosError.response.status === 404) {
+                    errorMessage = 'Usuário não encontrado.';
+                } else {
+                    errorMessage = axiosError.response.data?.message || errorMessage;
+                }
+            } else {
+                errorMessage = 'Erro de rede. Verifique sua conexão.';
+            }
+            setResetPasswordMessage({ type: 'danger', text: errorMessage });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
     // Abre modal de edição (mantido)
     const openEditModal = (aluno: Aluno) => {
         setEditingAluno(aluno);
         setIsModalActive(true);
         setError(null);
+        setResetPasswordMessage(null); // Limpa mensagens ao abrir o modal
     };
 
     // Abre modal de confirmação de exclusão (mantido)
@@ -249,6 +308,7 @@ export default function GerenciarAlunos() {
         setAlunoToDelete(aluno);
         setIsDeleteModalActive(true);
         setError(null);
+        setResetPasswordMessage(null); // Limpa mensagens ao abrir o modal
     };
 
     // Função para fechar modais e limpar estados (mantido)
@@ -257,7 +317,10 @@ export default function GerenciarAlunos() {
         setEditingAluno(null);
         setIsDeleteModalActive(false);
         setAlunoToDelete(null);
+        setIsResetConfirmModalActive(false); // Fechar modal de confirmação de reset
+        setAlunoToResetPassword(null); // Limpar aluno para reset
         setError(null);
+        setResetPasswordMessage(null); // Sempre limpa a mensagem de reset ao fechar o modal
     };
 
     return (
@@ -299,14 +362,14 @@ export default function GerenciarAlunos() {
                             </div>
 
                             {/* Loading/Error/Empty states */}
-                            {isLoading ? (
+                            {isLoading && !editingAluno && !alunoToDelete && !isResetConfirmModalActive ? ( // Ajustado para não mostrar loading quando modal está ativo
                                 <div className="has-text-centered">
                                     <span className="icon is-large">
                                         <i className="fas fa-spinner fa-pulse fa-2x"></i>
                                     </span>
                                     <p>Carregando alunos...</p>
                                 </div>
-                            ) : error && !isModalActive && !isDeleteModalActive ? (
+                            ) : error && !isModalActive && !isDeleteModalActive && !isResetConfirmModalActive ? (
                                 <div className="notification is-danger">
                                     <button
                                         className="delete"
@@ -411,7 +474,7 @@ export default function GerenciarAlunos() {
                 </div>
             </section>
 
-            {/* Modal de Edição (mantido) */}
+            {/* Modal de Edição */}
             {editingAluno && (
                 <div className={`modal ${isModalActive ? 'is-active' : ''}`}>
                     <div className="modal-background" onClick={closeModal}></div>
@@ -429,6 +492,13 @@ export default function GerenciarAlunos() {
                                 <div className="notification is-danger">
                                     <button className="delete" onClick={() => setError(null)}></button>
                                     {error}
+                                </div>
+                            )}
+                            {/* Mensagem de sucesso/erro do reset de senha */}
+                            {resetPasswordMessage && (
+                                <div className={`notification is-${resetPasswordMessage.type}`}>
+                                    <button className="delete" onClick={() => setResetPasswordMessage(null)}></button>
+                                    {resetPasswordMessage.text}
                                 </div>
                             )}
 
@@ -519,7 +589,7 @@ export default function GerenciarAlunos() {
                                 </div>
                             </div>
 
-                            {/* NOVO CAMPO: Edital de Ingresso */}
+                            {/* CAMPO: Edital de Ingresso */}
                             <div className="field">
                                 <label className="label">Edital de Ingresso</label>
                                 <div className="control">
@@ -535,7 +605,21 @@ export default function GerenciarAlunos() {
                                     />
                                 </div>
                             </div>
-                            
+
+                            {/* NOVO BOTÃO: Resetar Senha */}
+                            <div className="field is-grouped is-grouped-centered mt-5">
+                                <div className="control">
+                                    <button
+                                        className="button is-warning is-light"
+                                        // Abre o modal de confirmação em vez de chamar diretamente handleResetPassword
+                                        onClick={() => editingAluno && openResetConfirmModal(editingAluno)}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? 'Resetando...' : 'Resetar Senha'}
+                                    </button>
+                                </div>
+                            </div>
+
                         </section>
                         <footer className="modal-card-foot">
                             <button
@@ -597,6 +681,50 @@ export default function GerenciarAlunos() {
                     </footer>
                 </div>
             </div>
+
+            {/* NOVO: Modal de Confirmação de Reset de Senha */}
+            {alunoToResetPassword && (
+                <div className={`modal ${isResetConfirmModalActive ? 'is-active' : ''}`}>
+                    <div className="modal-background" onClick={closeModal}></div>
+                    <div className="modal-card">
+                        <header className="modal-card-head">
+                            <p className="modal-card-title">Confirmar Reset de Senha</p>
+                            <button
+                                className="delete"
+                                aria-label="close"
+                                onClick={closeModal}
+                            ></button>
+                        </header>
+                        <section className="modal-card-body">
+                            {resetPasswordMessage && ( // Exibe a mensagem aqui também, se houver
+                                <div className={`notification is-${resetPasswordMessage.type} is-light`}>
+                                    <button className="delete" onClick={() => setResetPasswordMessage(null)}></button>
+                                    {resetPasswordMessage.text}
+                                </div>
+                            )}
+                            <p>Tem certeza que deseja resetar a senha do aluno <strong>{alunoToResetPassword.usuario.nome}</strong>?</p>
+                            <p className="has-text-warning">A nova senha será "Senha123".</p>
+                            <p className="has-text-danger">Esta ação é irreversível.</p>
+                        </section>
+                        <footer className="modal-card-foot">
+                            <button
+                                className="button is-warning mr-2"
+                                onClick={handleResetPassword} // Chama a função que faz o reset
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Resetando...' : 'Confirmar Reset'}
+                            </button>
+                            <button
+                                className="button"
+                                onClick={closeModal}
+                                disabled={isLoading}
+                            >
+                                Cancelar
+                            </button>
+                        </footer>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
