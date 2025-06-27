@@ -112,7 +112,6 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
                                     value={formData.periodoAno}
                                     onChange={handleInputChange}
                                     required
-                                    placeholder="2025.1"
                                 />
                             </div>
                         </div>

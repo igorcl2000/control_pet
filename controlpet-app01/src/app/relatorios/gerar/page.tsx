@@ -46,12 +46,15 @@ interface AvaliacaoTutorData {
     outrasInformacoes: string;
 }
 
-type AvaliacaoRating = 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+type AvaliacaoRating = 'RUIM' | 'REGULAR' | 'BOM' | 'ÓTIMO' | ''; // Adicionado 'ÓTIMO' aqui também para consistência
 
 const getValidRating = (rating: string | undefined | null): AvaliacaoRating => {
     if (rating) {
         const upperRating = rating.toUpperCase();
-        if (['RUIM', 'REGULAR', 'BOM', 'OTIMO'].includes(upperRating)) {
+        if (upperRating === 'OTIMO') { // Verifica se é "OTIMO" (sem acento)
+            return 'ÓTIMO'; // Retorna "ÓTIMO" (com acento)
+        }
+        if (['RUIM', 'REGULAR', 'BOM', 'ÓTIMO'].includes(upperRating)) { // Inclui 'ÓTIMO' (com acento)
             return upperRating as AvaliacaoRating;
         }
     }
@@ -120,9 +123,9 @@ const ReportPage: React.FC<{}> = () => {
                 } else {
                     setAvaliacaoTutorData({
                         relatorioId: parseInt(relatorioId),
-                        cargaHoraria: 'OTIMO',
-                        interesseAtividades: 'OTIMO',
-                        habilidadesDesenvolvidas: 'OTIMO',
+                        cargaHoraria: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
+                        interesseAtividades: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
+                        habilidadesDesenvolvidas: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
                         outrasInformacoes: '',
                     });
                 }
@@ -130,9 +133,9 @@ const ReportPage: React.FC<{}> = () => {
                 console.warn('Erro ao buscar avaliação ou nenhuma avaliação encontrada. Preenchendo com valores padrão:', avaliacaoError);
                 setAvaliacaoTutorData({
                     relatorioId: parseInt(relatorioId),
-                    cargaHoraria: 'OTIMO',
-                    interesseAtividades: 'OTIMO',
-                    habilidadesDesenvolvidas: 'OTIMO',
+                    cargaHoraria: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
+                    interesseAtividades: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
+                    habilidadesDesenvolvidas: 'OTIMO', // Mantive 'OTIMO' aqui para ser processado pela função
                     outrasInformacoes: '',
                 });
             }
@@ -242,6 +245,7 @@ const ReportPage: React.FC<{}> = () => {
         activityEndDate: formatarData(reportData.dataFinal),
         announcement: alunoData?.editalIngresso || 'N/A',
         studentSignatureName: alunoData?.usuario?.nome || 'N/A',
+        // Aqui, getValidRating já fará a conversão para 'ÓTIMO' se for 'OTIMO'
         tutorCargaHoraria: getValidRating(avaliacaoTutorData?.cargaHoraria),
         tutorInteresseAtividades: getValidRating(avaliacaoTutorData?.interesseAtividades),
         tutorHabilidadesDesenvolvidas: getValidRating(avaliacaoTutorData?.habilidadesDesenvolvidas),

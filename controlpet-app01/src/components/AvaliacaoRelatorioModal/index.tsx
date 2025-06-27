@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import api from '@/services/api';
 import { AxiosError } from 'axios';
 
-type AvaliacaoOpcoes = 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+// 1. Atualizar AvaliacaoOpcoes para incluir 'ÓTIMO' (com acento)
+type AvaliacaoOpcoes = 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | 'ÓTIMO' | '';
 
 interface Relatorio {
     id: number;
@@ -24,9 +25,10 @@ interface Relatorio {
 
 interface AvaliacaoRelatorioData {
     relatorioId: number;
-    cargaHoraria: AvaliacaoOpcoes;
-    interesseAtividades: AvaliacaoOpcoes;
-    habilidadesDesenvolvidas: AvaliacaoOpcoes;
+    // O tipo de envio para a API continua sendo 'OTIMO' (sem acento), então usamos AvaliacaoOpcoes sem 'ÓTIMO'
+    cargaHoraria: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    interesseAtividades: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    habilidadesDesenvolvidas: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
     outrasInformacoes: string;
     id?: number;
 }
@@ -39,6 +41,7 @@ interface AvaliacaoRelatorioModalProps {
 }
 
 export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvaliacaoConcluida }: AvaliacaoRelatorioModalProps) {
+    // Agora, os estados podem armazenar 'ÓTIMO'
     const [cargaHoraria, setCargaHoraria] = useState<AvaliacaoOpcoes>('');
     const [interesseAtividades, setInteresseAtividades] = useState<AvaliacaoOpcoes>('');
     const [habilidadesDesenvolvidas, setHabilidadesDesenvolvidas] = useState<AvaliacaoOpcoes>('');
@@ -49,7 +52,8 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const avaliacaoOptions: AvaliacaoOpcoes[] = ['RUIM', 'REGULAR', 'BOM', 'OTIMO'];
+    // 2. Modificar avaliacaoOptions para exibir 'ÓTIMO'
+    const avaliacaoOptionsParaExibicao: ('RUIM' | 'REGULAR' | 'BOM' | 'ÓTIMO')[] = ['RUIM', 'REGULAR', 'BOM', 'ÓTIMO'];
 
     useEffect(() => {
         const fetchAvaliacao = async () => {
@@ -61,15 +65,18 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                 try {
                     const response = await api.get<AvaliacaoRelatorioData>(`/api/avaliacoes-relatorio/relatorio/${relatorio.id}`);
                     const avaliacao = response.data;
+
+                    // 4. Ajustar useEffect (fetchAvaliacao): Se vier "OTIMO", converter para "ÓTIMO" para o estado local
                     setAvaliacaoId(avaliacao.id || null);
-                    setCargaHoraria(avaliacao.cargaHoraria || '');
-                    setInteresseAtividades(avaliacao.interesseAtividades || '');
-                    setHabilidadesDesenvolvidas(avaliacao.habilidadesDesenvolvidas || '');
+                    setCargaHoraria(avaliacao.cargaHoraria === 'OTIMO' ? 'ÓTIMO' : avaliacao.cargaHoraria || '');
+                    setInteresseAtividades(avaliacao.interesseAtividades === 'OTIMO' ? 'ÓTIMO' : avaliacao.interesseAtividades || '');
+                    setHabilidadesDesenvolvidas(avaliacao.habilidadesDesenvolvidas === 'OTIMO' ? 'ÓTIMO' : avaliacao.habilidadesDesenvolvidas || '');
                     setOutrasInformacoes(avaliacao.outrasInformacoes || '');
                 } catch (err) {
                     console.error('Erro ao buscar avaliação existente:', err);
                     const axiosError = err as AxiosError<any>;
                     if (axiosError.response?.status === 404) {
+                        // Resetar para vazio se não houver avaliação encontrada
                         setCargaHoraria('');
                         setInteresseAtividades('');
                         setHabilidadesDesenvolvidas('');
@@ -81,6 +88,7 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                     setIsLoading(false);
                 }
             } else if (!isActive) {
+                // Resetar estados quando o modal não está ativo
                 setCargaHoraria('');
                 setInteresseAtividades('');
                 setHabilidadesDesenvolvidas('');
@@ -99,12 +107,21 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
         setError(null);
         setSuccessMessage(null);
 
+        // Função auxiliar para converter 'ÓTIMO' para 'OTIMO' antes de enviar
+        const formatForApi = (value: AvaliacaoOpcoes): 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '' => {
+            if (value === 'ÓTIMO') {
+                return 'OTIMO';
+            }
+            return value === 'RUIM' || value === 'REGULAR' || value === 'BOM' || value === 'OTIMO' ? value : '';
+        };
+
         try {
             const avaliacaoData: AvaliacaoRelatorioData = {
                 relatorioId: relatorio.id,
-                cargaHoraria: cargaHoraria,
-                interesseAtividades: interesseAtividades,
-                habilidadesDesenvolvidas: habilidadesDesenvolvidas,
+                // 3. Ajustar handleSubmitAvaliacao: Converter 'ÓTIMO' para 'OTIMO' antes de enviar
+                cargaHoraria: formatForApi(cargaHoraria),
+                interesseAtividades: formatForApi(interesseAtividades),
+                habilidadesDesenvolvidas: formatForApi(habilidadesDesenvolvidas),
                 outrasInformacoes: outrasInformacoes,
             };
 
@@ -117,7 +134,12 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                 setSuccessMessage('Avaliação salva com sucesso!');
             }
 
-            onClose();
+            // Opcional: Atualizar o relatório na lista pai se necessário.
+            // Para isso, você precisaria decidir como a 'Relatorio' interface vai lidar com a avaliação:
+            // Se Relatorio agora inclui as propriedades de avaliação, você pode passá-las.
+            // Por exemplo:
+            // onAvaliacaoConcluida({ ...relatorio, ...response.data }); // Assumindo que response.data inclui as propriedades de avaliação salvas
+            onClose(); // Fechar o modal após o sucesso
         } catch (err) {
             console.error('Erro ao salvar avaliação:', err);
             const axiosError = err as AxiosError<any>;
@@ -154,11 +176,12 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                     {/* Campos de avaliação com Botões Selecionáveis */}
                     <div className="field">
                         <label className="label">Carga Horária</label>
-                        <div className="control is-expanded"> {/* is-expanded para Bulma */}
-                            <div className="buttons has-addons"> {/* has-addons e is-centered para Bulma */}
-                                {avaliacaoOptions.map(option => (
+                        <div className="control is-expanded">
+                            <div className="buttons has-addons">
+                                {avaliacaoOptionsParaExibicao.map(option => (
                                     <button
                                         key={`cargaHoraria-${option}`}
+                                        // Compara com 'OTIMO' para o estado, se o option for 'ÓTIMO', mostra selecionado
                                         className={`button ${cargaHoraria === option ? 'is-primary' : ''}`}
                                         onClick={() => setCargaHoraria(option)}
                                     >
@@ -173,7 +196,7 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                         <label className="label">Interesse nas Atividades</label>
                         <div className="control is-expanded">
                             <div className="buttons has-addons">
-                                {avaliacaoOptions.map(option => (
+                                {avaliacaoOptionsParaExibicao.map(option => (
                                     <button
                                         key={`interesseAtividades-${option}`}
                                         className={`button ${interesseAtividades === option ? 'is-primary' : ''}`}
@@ -190,7 +213,7 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                         <label className="label">Habilidades Desenvolvidas</label>
                         <div className="control is-expanded">
                             <div className="buttons has-addons ">
-                                {avaliacaoOptions.map(option => (
+                                {avaliacaoOptionsParaExibicao.map(option => (
                                     <button
                                         key={`habilidadesDesenvolvidas-${option}`}
                                         className={`button ${habilidadesDesenvolvidas === option ? 'is-primary' : ''}`}
@@ -214,13 +237,6 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                             ></textarea>
                         </div>
                     </div>
-                    {/*
-                    <div className="content mt-4">
-                        <p><strong>Tipo de Relatório:</strong> {relatorio.tipoRelatorio}</p>
-                        <p><strong>Período:</strong> {relatorio.dataInicial} a {relatorio.dataFinal}</p>
-                        <p><strong>Resumo:</strong> {relatorio.resumoAtividades}</p>
-                    </div>
-                    */}
                 </section>
                 <footer className="modal-card-foot">
                     <button

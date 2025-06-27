@@ -17,9 +17,9 @@ interface A4ReportTemplateProps {
     announcement?: string; // Novo: Campo para o Edital
     studentSignatureName?: string; // Novo: Nome do aluno para a assinatura
     // NOVAS PROPS PARA A AVALIAÇÃO DO TUTOR
-    tutorCargaHoraria?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
-    tutorInteresseAtividades?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
-    tutorHabilidadesDesenvolvidas?: 'RUIM' | 'REGULAR' | 'BOM' | 'OTIMO' | '';
+    tutorCargaHoraria?: 'RUIM' | 'REGULAR' | 'BOM' | 'ÓTIMO' | '';
+    tutorInteresseAtividades?: 'RUIM' | 'REGULAR' | 'BOM' | 'ÓTIMO' | '';
+    tutorHabilidadesDesenvolvidas?: 'RUIM' | 'REGULAR' | 'BOM' | 'ÓTIMO' | '';
     tutorOutrasInformacoes?: string;
 }
 
