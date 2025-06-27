@@ -231,21 +231,11 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     .c50 { margin-left: 216pt; text-indent: 36pt }
 
     .c0 {
-    /* Remova o margin-left negativo */
-    /* margin-left: -5.4pt; */
-
     border-spacing: 0;
     border-collapse: collapse;
+    margin: 0 auto;
+    width: 90%;}
     
-    /* Centraliza o bloco horizontalmente */
-    margin: 0 auto; 
-    
-    /* Adicione uma largura para que margin: 0 auto; funcione */
-    /* Você precisará ajustar esta largura para que a tabela se ajuste ao seu layout */
-    width: 90%; /* Exemplo: 90% da largura do contêiner pai */
-    /* Ou uma largura fixa, se preferir: */
-    /* width: 190mm; */ /* Ajuste conforme necessário, considerando o A4 (210mm) e as margens */
-    }
     .c30 { border-top: 0.5pt solid #000000; }
     .c32 { background-color: #d9d9d9 }
 
@@ -565,7 +555,6 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     <p className="c2 c30">
                         <span className="c27">Fones: (034) 3326-1121 / Fax: (034) 3326-1101</span>
                     </p>
-                    <p className="c4 c5"><span className="c13"></span></p>
                 </div>
             </div>
         </>

@@ -126,6 +126,7 @@ export function CreateAlunoModal({ isActive, onClose, onSuccess, usuarioId }: Cr
                                     value={formData.editalIngresso}
                                     onChange={handleInputChange}
                                     required
+                                    placeholder='Ex: 1/2025'
                                 />
                             </div>
                         </div>

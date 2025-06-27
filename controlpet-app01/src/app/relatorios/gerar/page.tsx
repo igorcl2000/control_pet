@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation';
 import api from '@/services/api';
 import A4ReportTemplate from '../../../components/A4ReportTemplate';
 
-// Interfaces for type safety (mantidas as mesmas)
 interface Usuario {
     id: number;
     nome: string;
@@ -54,7 +53,7 @@ const getValidRating = (rating: string | undefined | null): AvaliacaoRating => {
         if (upperRating === 'OTIMO') { // Verifica se é "OTIMO" (sem acento)
             return 'ÓTIMO'; // Retorna "ÓTIMO" (com acento)
         }
-        if (['RUIM', 'REGULAR', 'BOM', 'ÓTIMO'].includes(upperRating)) { // Inclui 'ÓTIMO' (com acento)
+        if (['RUIM', 'REGULAR', 'BOM', 'ÓTIMO'].includes(upperRating)) {
             return upperRating as AvaliacaoRating;
         }
     }
@@ -165,7 +164,7 @@ const ReportPage: React.FC<{}> = () => {
             const options = {
                 margin: [5, 5, 5, 5],
                 filename: `relatorio_${alunoData?.usuario?.nome || 'documento'}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
+                image: { type: 'png', quality: 0.98 },
                 html2canvas: {
                     scale: 2,
                     useCORS: true,
