@@ -234,6 +234,7 @@ export function AvaliacaoRelatorioModal({ isActive, onClose, relatorio, onAvalia
                                 placeholder="Adicione outras informações sobre a avaliação..."
                                 value={outrasInformacoes}
                                 onChange={(e) => setOutrasInformacoes(e.target.value)}
+                                maxLength={300}
                             ></textarea>
                         </div>
                     </div>

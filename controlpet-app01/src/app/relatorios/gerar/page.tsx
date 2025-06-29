@@ -163,7 +163,7 @@ const ReportPage: React.FC<{}> = () => {
 
             const options = {
                 margin: [5, 5, 5, 5],
-                filename: `relatorio_${alunoData?.usuario?.nome || 'documento'}.pdf`,
+                filename: `RelatorioMensalPET_${new Date(`${reportData.dataInicial}T12:00:00`).toLocaleString('pt-BR', { month: 'long' }) || 'documento'}_${alunoData?.usuario?.nome || 'documento'}.pdf`,
                 image: { type: 'png', quality: 0.98 },
                 html2canvas: {
                     scale: 2,

@@ -177,6 +177,7 @@ export function RelatorioDetailsModal({
                                         name="resumoAtividades"
                                         value={editData.resumoAtividades}
                                         onChange={handleInputChange}
+                                        maxLength={700}
                                         required
                                     />
                                 </div>
@@ -190,6 +191,7 @@ export function RelatorioDetailsModal({
                                         name="comentarios"
                                         value={editData.comentarios || ''}
                                         onChange={handleInputChange}
+                                        maxLength={700}
                                     />
                                 </div>
                             </div>

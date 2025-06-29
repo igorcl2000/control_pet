@@ -123,16 +123,14 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
         padding: 0pt 5.4pt;
         vertical-align: top;
         width: 167.2mm;
-        /* Remover height ou min-height se presente para permitir auto-ajuste */
-        height: auto; /* Garante que a altura se ajuste ao conteúdo */
+        /* height: auto; */
     }
     .c49 {
         border: 1pt solid #000000;
         padding: 0pt 5.4pt;
         vertical-align: top;
-        width: 167.4mm;
-        /* Remover height ou min-height se presente para permitir auto-ajuste */
-        height: auto; /* Garante que a altura se ajuste ao conteúdo */
+        width: 167.4mm
+        /* height: auto; */
     }
     .c25 {
         border: 1pt solid #000000;
@@ -246,8 +244,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     .c45 { height: 2.7mm; }
     /* REMOVER a altura fixa ou min-height da linha da tabela (.c1 e .c31) se elas estão impedindo o auto-ajuste */
     /* Deixe a altura ser controlada pelo conteúdo da célula (td) */
-    .c1 { /* height: 30.9mm; */ } /* Removido para permitir que a linha se ajuste */
-    .c31 { /* height: 32.3mm; */ } /* Removido para permitir que a linha se ajuste */
+    .c1 { height: 80mm; } /* Removido para permitir que a linha se ajuste */
+    .c31 { height: 50mm; } /* Removido para permitir que a linha se ajuste */
     .c7 { height: 0mm; }
     .c37 { height: 7.3mm; }
     .c18 { height: 4.8mm; }
@@ -258,7 +256,7 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
         width: 210mm;
         min-height: 297mm;
         margin: 0 auto;
-        padding: 15mm;
+        padding: 10mm;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         box-sizing: border-box;
         display: block;
@@ -412,7 +410,39 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     </tbody>
                 </table>
                 <p className="c4 c5"><span className="c8"></span></p>
-                {/* NOVO MÓDULO: AVALIAÇÃO DO TUTOR SOBRE O PETIANO */}
+                {/* DADOS DO GRUPO PET INSTITUCIONAL */}
+                <table className="c0">
+                    <thead>
+                        <tr className="c18">
+                            <td className="c16" colSpan={1} rowSpan={1}>
+                                <p className="c2"><span className="c22">DADOS DO GRUPO PET INSTITUCIONAL</span></p>
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr className="c39">
+                            <td className="c25" colSpan={1} rowSpan={1}>
+                                <p className="c4">
+                                    <span className="c14">Grupo PET Institucional: {institutionPetGroup}</span>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr className="c37">
+                            <td className="c25" colSpan={1} rowSpan={1}>
+                                <p className="c4"><span className="c14">Edital: {announcement}</span></p>
+                            </td>
+                        </tr>
+                        <tr className="c37">
+                            <td className="c25" colSpan={1} rowSpan={1}>
+                                <p className="c4">
+                                    <span className="c14">Tutor: {tutorName}</span>
+                                </p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p className="c4 c5"><span className="c8"></span></p>
+                {/* AVALIAÇÃO DO TUTOR SOBRE O PETIANO */}
                 <table className="c0">
                     <thead>
                         <tr className="c18">
@@ -488,6 +518,70 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     </tbody>
                 </table>
                 <p className="c4 c5"><span className="c8"></span></p>
+                <div>
+                    <p className="c2 c30">
+                        <span className="c27">AV Doutor Randolfo Borges Junior 2900 – Univerdecidade- Uberaba (MG) - CEP: 38.064-200</span>
+                    </p>
+                    <p className="c2 c30">
+                        <span className="c27">Fones: (034) 3326-1121 / Fax: (034) 3326-1101</span>
+                    </p>
+                </div>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <div>
+                    <p className="c28"><span className="c20"></span></p>
+                    <table className="c0">
+                        <tbody>
+                            <tr className="c43">
+                                <td className="c15" colSpan={1} rowSpan={1}>
+                                    <p className="c2">
+                                        <span style={{
+                                            overflow: 'hidden',
+                                            display: 'inline-block',
+                                            margin: '0.00px 0.00px',
+                                            border: '0.00px solid #000000',
+                                            transform: 'rotate(0.00rad) translateZ(0px)',
+                                            WebkitTransform: 'rotate(0.00rad) translateZ(0px)',
+                                            width: '188.98px',
+                                            height: '52.04px',
+                                        }}>
+                                            <img
+                                                alt="Horizontal resumida.png"
+                                                src="/image1.png"
+                                                style={{
+                                                    width: '188.98px',
+                                                    height: '52.04px',
+                                                    marginLeft: '-0.00px',
+                                                    marginTop: '-0.00px',
+                                                    transform: 'rotate(0.00rad) translateZ(0px)',
+                                                    WebkitTransform: 'rotate(0.00rad) translateZ(0px)',
+                                                }}
+                                                title="Horizontal resumida.png"
+                                            />
+                                        </span>
+                                    </p>
+                                </td>
+                                <td className="c44" colSpan={1} rowSpan={1}>
+                                    <p className="c2"><span className="c12">MINISTÉRIO DA EDUCAÇÃO</span></p>
+                                    <p className="c2"><span className="c33 c34">INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA</span></p>
+                                    <p className="c2"><span className="c34 c33">E TECNOLOGIA DO TRIÂNGULO MINEIRO</span></p>
+                                    <p className="c2"><span className="c12">Pró-reitoria de Ensino</span></p>
+                                    <p className="c2"><span className="c12">Pró-reitoria de Extensão e Cultura</span></p>
+                                    <p className="c2"><span className="c12">Pró-Reitoria de Pesquisa, Pós-graduação e Inovação</span></p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p className="c4 c5"><span className="c13"></span></p>
+                </div>
+                <p className="c4 c5"><span className="c8"></span></p>
                 <table className="c0">
                     <thead>
                         <tr className="c45">
@@ -548,6 +642,16 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                 <p className="c2"><span className="c20">Assinatura eletrônica via Docs no Virtual IF</span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                
                 <div>
                     <p className="c2 c30">
                         <span className="c27">AV Doutor Randolfo Borges Junior 2900 – Univerdecidade- Uberaba (MG) - CEP: 38.064-200</span>

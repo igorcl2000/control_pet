@@ -21,7 +21,7 @@ public class AvaliacaoRelatorioService {
     private AvaliacaoRelatorioRepository avaliacaoRelatorioRepository;
 
     @Autowired
-    private RelatorioRepository relatorioRepository; // Você precisará criar este repositório para Relatorio
+    private RelatorioRepository relatorioRepository;
 
     @Transactional
     public AvaliacaoRelatorioResponse criarAvaliacao(AvaliacaoRelatorioRequest request) {

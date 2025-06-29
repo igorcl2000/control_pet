@@ -191,6 +191,7 @@ export default function RelatorioMensalPET() {
                                         placeholder="Quais foram as atividades desenvolvidas?"
                                         value={resumoAtividades}
                                         onChange={(e) => setResumoAtividades(e.target.value)}
+                                        maxLength={700}
                                         required
                                     />
                                 </div>
@@ -205,6 +206,7 @@ export default function RelatorioMensalPET() {
                                         placeholder="Quais foram as dificuldades durante o mês? Deixe um comentário."
                                         value={comentarios}
                                         onChange={(e) => setComentarios(e.target.value)}
+                                        maxLength={700}
                                     />
                                 </div>
                             </div>

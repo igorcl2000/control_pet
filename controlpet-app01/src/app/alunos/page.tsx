@@ -610,7 +610,7 @@ export default function GerenciarAlunos() {
                             <div className="field is-grouped is-grouped-centered mt-5">
                                 <div className="control">
                                     <button
-                                        className="button is-warning is-light"
+                                        className="button is-warning"
                                         // Abre o modal de confirmação em vez de chamar diretamente handleResetPassword
                                         onClick={() => editingAluno && openResetConfirmModal(editingAluno)}
                                         disabled={isLoading}
