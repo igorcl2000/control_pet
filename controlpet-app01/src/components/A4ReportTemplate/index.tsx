@@ -24,10 +24,11 @@ interface A4ReportTemplateProps {
 }
 
 // Função Auxiliar para Quebras de Linha
-const formatTextWithLineBreaks = (text: string | undefined): React.ReactNode => {
+// CORREÇÃO: Aceita uma classe extra para aplicar estilos específicos.
+const formatTextWithLineBreaks = (text: string | undefined, extraClassName: string = ""): React.ReactNode => {
     const safeText = text || '';
-    // Retorna diretamente o div para evitar aninhamento incorreto
-    return <div className="c8" dangerouslySetInnerHTML={{ __html: safeText.replace(/\n/g, '<br />') }} />;
+    const finalClassName = `c8 ${extraClassName}`.trim(); // Combina a classe padrão c8 com a classe extra
+    return <div className={finalClassName} dangerouslySetInnerHTML={{ __html: safeText.replace(/\n/g, '<br />') }} />;
 };
 
 const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
@@ -79,6 +80,18 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     ul.lst-kix_list_1-8 { list-style-type: none }
     ul.lst-kix_list_1-5 { list-style-type: none }
     ul.lst-kix_list_1-6 { list-style-type: none }
+
+    @media print {
+        .force-new-page {
+            page-break-before: always; /* Legacy property */
+            break-before: page; /* Modern property */
+        }
+
+        /* Classe para o rodapé que deve ficar no final da última página */
+        .final-footer {
+            margin-top: auto; /* Isso empurrará a div para o final do seu container flex */
+        }
+    }
     
     .c11 {
         border: 1pt solid #000000;
@@ -129,8 +142,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
         border: 1pt solid #000000;
         padding: 0pt 5.4pt;
         vertical-align: top;
-        width: 167.4mm
-        /* height: auto; */
+        width: 167.4mm;
+        /* REMOVIDO: max-height e outras propriedades de altura/overflow do .c49 para evitar conflitos, pois controlaremos o elemento interno */
     }
     .c25 {
         border: 1pt solid #000000;
@@ -232,7 +245,9 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     border-spacing: 0;
     border-collapse: collapse;
     margin: 0 auto;
-    width: 90%;}
+    width: 90%;
+    table-layout: fixed; /* CORREÇÃO: Adicionado para layout de tabela fixo */
+    }
     
     .c30 { border-top: 0.5pt solid #000000; }
     .c32 { background-color: #d9d9d9 }
@@ -244,8 +259,10 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
     .c45 { height: 2.7mm; }
     /* REMOVER a altura fixa ou min-height da linha da tabela (.c1 e .c31) se elas estão impedindo o auto-ajuste */
     /* Deixe a altura ser controlada pelo conteúdo da célula (td) */
-    .c1 { height: 80mm; } /* Removido para permitir que a linha se ajuste */
-    .c31 { height: 50mm; } /* Removido para permitir que a linha se ajuste */
+    .c1 { 
+        height: 80mm;
+     }
+    .c31 { height: 80mm; }
     .c7 { height: 0mm; }
     .c37 { height: 7.3mm; }
     .c18 { height: 4.8mm; }
@@ -262,6 +279,15 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
         display: block;
         text-align: initial;
         position: relative;
+    }
+
+    /* CORREÇÃO: Nova classe para o box de conteúdo do resumo de atividades */
+    .activities-summary-box {
+        height: 80mm /* Faz com que o div preencha a altura da célula da tabela */
+        overflow: hidden; /* Corta o conteúdo que exceder a altura */
+        display: block; /* Garante que o div se comporte como um bloco para respeitar height/overflow */
+        padding: 0; /* Remove padding padrão se houver */
+        margin: 0; /* Remove margin padrão se houver */
     }
 
     body {
@@ -383,7 +409,15 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                             <td className="c46" colSpan={1} rowSpan={1}>
                                 <p className="c36">
                                     <span className="c23">Estudante: </span>
-                                    <span className="c14">{studentType ? studentType.charAt(0).toUpperCase() + studentType.slice(1) : ''}</span>
+                                    <span className="c14">
+                                        ( {studentType && studentType.toLowerCase() === 'bolsista' ? 'X' : ' '} ) Bolsista
+                                    </span>
+                                </p>
+                                <p className="c36">
+                                    <span className="c23">Estudante: </span>
+                                    <span className="c14">
+                                        ( {studentType && studentType.toLowerCase() === 'voluntário' ? 'X' : ' '} ) Voluntário
+                                    </span>
                                 </p>
                             </td>
                             <td className="c24" colSpan={1} rowSpan={1}>
@@ -459,7 +493,13 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                             <td className="c54" colSpan={1} rowSpan={1}>
                                 <p className="c4" style={{ textAlign: 'left' }}>
                                     <span className="c14">
-                                        {tutorCargaHoraria}
+                                        ( {tutorCargaHoraria === 'RUIM' ? 'X' : ''} ) Ruim
+                                        &nbsp;
+                                        ( {tutorCargaHoraria === 'REGULAR' ? 'X' : ''} ) Regular
+                                        &nbsp;
+                                        ( {tutorCargaHoraria === 'BOM' ? 'X' : ''} ) Bom
+                                        &nbsp;
+                                        ( {tutorCargaHoraria === 'ÓTIMO' ? 'X' : ''} ) Ótimo
                                     </span>
                                 </p>
                             </td>
@@ -471,7 +511,13 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                             <td className="c54" colSpan={1} rowSpan={1}>
                                 <p className="c4" style={{ textAlign: 'left' }}>
                                     <span className="c14">
-                                        {tutorInteresseAtividades}
+                                        ( {tutorInteresseAtividades === 'RUIM' ? 'X' : ''} ) Ruim
+                                        &nbsp;
+                                        ( {tutorInteresseAtividades === 'REGULAR' ? 'X' : ''} ) Regular
+                                        &nbsp;
+                                        ( {tutorInteresseAtividades === 'BOM' ? 'X' : ''} ) Bom
+                                        &nbsp;
+                                        ( {tutorInteresseAtividades === 'ÓTIMO' ? 'X' : ''} ) Ótimo
                                     </span>
                                 </p>
                             </td>
@@ -483,7 +529,13 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                             <td className="c54" colSpan={1} rowSpan={1}>
                                 <p className="c4" style={{ textAlign: 'left' }}>
                                     <span className="c14">
-                                        {tutorHabilidadesDesenvolvidas}
+                                        ( {tutorHabilidadesDesenvolvidas === 'RUIM' ? 'X' : ''} ) Ruim
+                                        &nbsp;
+                                        ( {tutorHabilidadesDesenvolvidas === 'REGULAR' ? 'X' : ''} ) Regular
+                                        &nbsp;
+                                        ( {tutorHabilidadesDesenvolvidas === 'BOM' ? 'X' : ''} ) Bom
+                                        &nbsp;
+                                        ( {tutorHabilidadesDesenvolvidas === 'ÓTIMO' ? 'X' : ''} ) Ótimo
                                     </span>
                                 </p>
                             </td>
@@ -491,8 +543,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                         <tr className="c39">
                             <td className="c41" colSpan={2} rowSpan={1}>
                                 <p className="c4"><span className="c14">4 - Outras informações:</span></p>
-                                {/* REMOVIDO <p> E <span> EXTERNOS */}
-                                {formatTextWithLineBreaks(tutorOutrasInformacoes)}
+                                {/* O 'tutorOutrasInformacoes' também pode se beneficiar de um box fixo se o conteúdo for longo */}
+                                {formatTextWithLineBreaks(tutorOutrasInformacoes, "activities-summary-box")}
                             </td>
                         </tr>
                     </tbody>
@@ -511,8 +563,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     <tbody>
                         <tr className="c1">
                             <td className="c49" colSpan={2} rowSpan={1}>
-                                {/* REMOVIDO <p> E <span> EXTERNOS */}
-                                {formatTextWithLineBreaks(activitiesSummary)}
+                                {/* CORREÇÃO: Passando a nova classe para o div de conteúdo */}
+                                {formatTextWithLineBreaks(activitiesSummary, "activities-summary-box")}
                             </td>
                         </tr>
                     </tbody>
@@ -527,14 +579,7 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     </p>
                 </div>
                 <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
-                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5 force-new-page"><span className="c8"></span></p>
                 <div>
                     <p className="c28"><span className="c20"></span></p>
                     <table className="c0">
@@ -593,8 +638,8 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                     <tbody>
                         <tr className="c31">
                             <td className="c41" colSpan={1} rowSpan={1}>
-                                {/* REMOVIDO <p> E <span> EXTERNOS */}
-                                {formatTextWithLineBreaks(petitionerComments)}
+                                {/* CORREÇÃO: Passando a nova classe para o div de conteúdo */}
+                                {formatTextWithLineBreaks(petitionerComments, "activities-summary-box")}
                             </td>
                         </tr>
                     </tbody>
@@ -651,8 +696,12 @@ const A4ReportTemplate: React.FC<A4ReportTemplateProps> = ({
                 <p className="c4 c5"><span className="c8"></span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
                 <p className="c4 c5"><span className="c8"></span></p>
-                
-                <div>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+                <p className="c4 c5"><span className="c8"></span></p>
+
+                <div id="final-footer" className="final-footer">
                     <p className="c2 c30">
                         <span className="c27">AV Doutor Randolfo Borges Junior 2900 – Univerdecidade- Uberaba (MG) - CEP: 38.064-200</span>
                     </p>
